@@ -50,12 +50,34 @@
 
     <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div class="modal-backdrop" id="modal-backdrop"></div>
-      <div class="modal-panel">
-        <div class="modal-header">
-          <h2 class="modal-title" id="modal-title">Portfolio</h2>
-          <button type="button" class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+      <div class="modal-panel" id="modal-panel" data-kind="">
+        <div class="modal-fx" aria-hidden="true">
+          <div class="modal-scanlines"></div>
+          <div class="modal-grain"></div>
+          <p class="modal-ghost" id="modal-ghost">GAMES</p>
         </div>
+
+        <button type="button" class="modal-close" id="modal-close" aria-label="Close">
+          <span>Bail</span>
+        </button>
+
+        <header class="modal-header">
+          <div class="modal-heading">
+            <p class="modal-stamp" id="modal-stamp">// SIGNAL</p>
+            <h2 class="modal-title" id="modal-title">Portfolio</h2>
+            <p class="modal-meta" id="modal-meta" hidden></p>
+          </div>
+          <p class="modal-hint" id="modal-hint" hidden>drag / scroll →</p>
+        </header>
+
         <div class="modal-body" id="modal-body"></div>
+
+        <div class="modal-scrub" id="modal-scrub" hidden>
+          <div class="modal-scrub-track">
+            <div class="modal-scrub-thumb" id="modal-scrub-thumb"></div>
+          </div>
+          <span class="modal-scrub-label" id="modal-scrub-label">00</span>
+        </div>
       </div>
     </div>
 

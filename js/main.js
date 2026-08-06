@@ -8,10 +8,18 @@
   const rgbEl = document.getElementById("rgb-split");
   const socialsEl = document.getElementById("socials");
   const modal = document.getElementById("modal");
+  const modalPanel = document.getElementById("modal-panel");
   const modalTitle = document.getElementById("modal-title");
+  const modalMeta = document.getElementById("modal-meta");
+  const modalGhost = document.getElementById("modal-ghost");
+  const modalStamp = document.getElementById("modal-stamp");
+  const modalHint = document.getElementById("modal-hint");
   const modalBody = document.getElementById("modal-body");
   const modalClose = document.getElementById("modal-close");
   const modalBackdrop = document.getElementById("modal-backdrop");
+  const modalScrub = document.getElementById("modal-scrub");
+  const modalScrubThumb = document.getElementById("modal-scrub-thumb");
+  const modalScrubLabel = document.getElementById("modal-scrub-label");
   const navButtons = document.querySelectorAll("[data-modal]");
 
   let data = null;
@@ -20,7 +28,15 @@
   let timerId = null;
   let transitioning = false;
   let modalOpen = false;
+  let activeKind = null;
+  let stripEl = null;
   let reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // drag state for horizontal strip
+  let dragging = false;
+  let dragStartX = 0;
+  let dragScrollLeft = 0;
+  let dragMoved = false;
 
   async function init() {
     try {
@@ -135,13 +151,61 @@
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modalOpen) closeModal();
     });
+
+    modalPanel?.addEventListener("wheel", onPanelWheel, { passive: false });
+
+    modalScrub?.addEventListener("pointerdown", (e) => {
+      if (!stripEl) return;
+      scrubToPointer(e);
+      const move = (ev) => scrubToPointer(ev);
+      const up = () => {
+        window.removeEventListener("pointermove", move);
+        window.removeEventListener("pointerup", up);
+      };
+      window.addEventListener("pointermove", move);
+      window.addEventListener("pointerup", up);
+    });
+  }
+
+  function onPanelWheel(e) {
+    if (!stripEl || activeKind === "about") return;
+    const delta = e.deltaY + e.deltaX;
+    if (!delta) return;
+    e.preventDefault();
+    stripEl.scrollLeft += delta;
+    updateScrub();
+  }
+
+  function scrubToPointer(e) {
+    if (!stripEl || !modalScrub) return;
+    const track = modalScrub.querySelector(".modal-scrub-track");
+    if (!track) return;
+    const rect = track.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const max = stripEl.scrollWidth - stripEl.clientWidth;
+    stripEl.scrollLeft = ratio * max;
+    updateScrub();
   }
 
   function openModal(kind) {
     if (!modal || !data) return;
+    activeKind = kind;
     const titles = { about: "About", games: "Games", music: "Music" };
+    const stamps = {
+      about: "// WHO DIS",
+      games: "// BOOT SEQUENCE",
+      music: "// PRESS PLAY",
+    };
+
     modalTitle.textContent = titles[kind] || "Portfolio";
+    if (modalGhost) modalGhost.textContent = titles[kind] || "PORTFOLIO";
+    if (modalStamp) modalStamp.textContent = stamps[kind] || "// SIGNAL";
+    modalPanel?.setAttribute("data-kind", kind);
+
+    setModalMeta(kind);
     modalBody.innerHTML = renderModalBody(kind);
+    wireStrip();
+
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("modal-open");
@@ -151,35 +215,90 @@
 
   function closeModal() {
     if (!modal) return;
+    unwireStrip();
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
     modalOpen = false;
+    activeKind = null;
+  }
+
+  function setModalMeta(kind) {
+    if (!modalMeta) return;
+    if (kind === "about") {
+      modalMeta.hidden = true;
+      modalMeta.textContent = "";
+      if (modalHint) modalHint.hidden = true;
+      if (modalScrub) modalScrub.hidden = true;
+      return;
+    }
+
+    const items = sortByDateDesc(kind === "games" ? data.games : data.music);
+    if (!items.length) {
+      modalMeta.hidden = true;
+      modalMeta.textContent = "";
+      if (modalHint) modalHint.hidden = true;
+      if (modalScrub) modalScrub.hidden = true;
+      return;
+    }
+
+    const years = items
+      .map((item) => yearFromDate(item.date))
+      .filter(Boolean)
+      .map(Number);
+    const countLabel = `${items.length} ${kind === "music" ? "tracks" : "drops"}`;
+    let range = "";
+    if (years.length) {
+      const min = Math.min(...years);
+      const max = Math.max(...years);
+      range = min === max ? `${min}` : `${min}–${max}`;
+    }
+
+    modalMeta.hidden = false;
+    modalMeta.textContent = range ? `${countLabel} · ${range}` : countLabel;
+    if (modalHint) modalHint.hidden = false;
+    if (modalScrub) modalScrub.hidden = false;
   }
 
   function renderModalBody(kind) {
     if (kind === "about") {
       const about = data.about || {};
       return `
-        <div class="about-stack">
-          <section class="about-block">
+        <div class="about-chaos">
+          <div class="about-sticker about-sticker-a" aria-hidden="true">ONE FLOW</div>
+          <div class="about-sticker about-sticker-b" aria-hidden="true">TREESTYLE</div>
+          <section class="about-card about-card-one">
+            <p class="about-kicker">alias</p>
             <h3>One <span class="accent">Flow</span> Man</h3>
-            <p>${escapeHtml(about.oneFlowMan || "")}</p>
+            <p class="about-copy">${escapeHtml(about.oneFlowMan || "")}</p>
           </section>
-          <section class="about-block">
+          <section class="about-card about-card-two">
+            <p class="about-kicker">studio</p>
             <h3>Treestyle Studios</h3>
-            <p>${escapeHtml(about.treestyleStudios || "")}</p>
+            <p class="about-copy">${escapeHtml(about.treestyleStudios || "")}</p>
           </section>
+          <p class="about-marquee" aria-hidden="true">
+            <span>games · music · glitch · chaos · games · music · glitch · chaos · </span>
+            <span>games · music · glitch · chaos · games · music · glitch · chaos · </span>
+          </p>
         </div>
       `;
     }
 
     const items = sortByDateDesc(kind === "games" ? data.games : data.music);
     if (!items.length) {
-      return `<p class="empty-state">No projects yet.</p>`;
+      return `<p class="empty-state">Nothing in the vault yet.</p>`;
     }
 
-    return `<div class="project-grid">${items.map(projectTile).join("")}</div>`;
+    const kindClass = kind === "music" ? "is-music" : "is-games";
+    return `
+      <div class="chaos-strip ${kindClass}" id="chaos-strip" tabindex="0">
+        ${items.map((item, index) => projectTile(item, index, kind)).join("")}
+        <div class="chaos-end" aria-hidden="true">
+          <span>end of tape</span>
+        </div>
+      </div>
+    `;
   }
 
   function sortByDateDesc(list) {
@@ -190,15 +309,130 @@
     });
   }
 
-  function projectTile(item) {
+  function yearFromDate(value) {
+    if (!value) return "";
+    const parsed = Date.parse(value);
+    if (!Number.isNaN(parsed)) return String(new Date(parsed).getFullYear());
+    const match = String(value).match(/\d{4}/);
+    return match ? match[0] : "";
+  }
+
+  // Stable pseudo-random from index for collage vibes
+  function vibe(index, salt) {
+    const x = Math.sin((index + 1) * 12.9898 + salt * 78.233) * 43758.5453;
+    return x - Math.floor(x);
+  }
+
+  function projectTile(item, index, kind) {
+    const featured = index === 0;
+    const year = yearFromDate(item.date);
+    const rot = ((vibe(index, 1) - 0.5) * (featured ? 4 : 14)).toFixed(2);
+    const lift = ((vibe(index, 2) - 0.5) * 48).toFixed(1);
+    const size = featured ? "xl" : vibe(index, 3) > 0.66 ? "lg" : vibe(index, 3) > 0.33 ? "md" : "sm";
+    const delay = Math.min(index, 12) * 60;
+    const tape = vibe(index, 4) > 0.55 ? " has-tape" : "";
+    const stampWords = kind === "music" ? ["PLAY", "LOUD", "SPIN", "DROP"] : ["PLAY", "BOOT", "JAM", "WISH"];
+    const stamp = stampWords[index % stampWords.length];
+
     return `
-      <a class="project-tile" href="${escapeAttr(item.url)}" target="_blank" rel="noopener noreferrer">
-        <div class="project-media">
-          <img src="${escapeAttr(item.image)}" alt="${escapeAttr(item.title)}" loading="lazy" />
+      <a
+        class="chaos-card size-${size}${featured ? " is-featured" : ""}${tape}"
+        href="${escapeAttr(item.url)}"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="--rot: ${rot}deg; --lift: ${lift}px; --stagger: ${delay}ms; --z: ${20 - index}"
+        data-index="${index}"
+      >
+        <span class="chaos-stamp" aria-hidden="true">${stamp}</span>
+        <div class="chaos-media">
+          <img src="${escapeAttr(item.image)}" alt="${escapeAttr(item.title)}" loading="lazy" draggable="false" />
+          <div class="chaos-glitch" aria-hidden="true"></div>
         </div>
-        <h3 class="project-title">${escapeHtml(item.title)}</h3>
+        <div class="chaos-caption">
+          ${year ? `<span class="chaos-year">${escapeHtml(year)}</span>` : ""}
+          <h3 class="chaos-title">${escapeHtml(item.title)}</h3>
+        </div>
       </a>
     `;
+  }
+
+  function wireStrip() {
+    unwireStrip();
+    stripEl = document.getElementById("chaos-strip");
+    if (!stripEl) {
+      if (modalScrub) modalScrub.hidden = true;
+      return;
+    }
+
+    stripEl.scrollLeft = 0;
+    // Force layout so overflow exists before first scrub update
+    void stripEl.offsetWidth;
+    updateScrub();
+
+    stripEl.addEventListener("scroll", updateScrub, { passive: true });
+    stripEl.addEventListener("wheel", onPanelWheel, { passive: false });
+    stripEl.addEventListener("pointerdown", onStripPointerDown);
+    stripEl.addEventListener("pointermove", onStripPointerMove);
+    stripEl.addEventListener("pointerup", onStripPointerUp);
+    stripEl.addEventListener("pointercancel", onStripPointerUp);
+    stripEl.addEventListener("pointerleave", onStripPointerUp);
+    stripEl.addEventListener("click", onStripClickCapture, true);
+  }
+
+  function unwireStrip() {
+    if (!stripEl) return;
+    stripEl.removeEventListener("scroll", updateScrub);
+    stripEl.removeEventListener("wheel", onPanelWheel);
+    stripEl.removeEventListener("pointerdown", onStripPointerDown);
+    stripEl.removeEventListener("pointermove", onStripPointerMove);
+    stripEl.removeEventListener("pointerup", onStripPointerUp);
+    stripEl.removeEventListener("pointercancel", onStripPointerUp);
+    stripEl.removeEventListener("pointerleave", onStripPointerUp);
+    stripEl.removeEventListener("click", onStripClickCapture, true);
+    stripEl = null;
+    dragging = false;
+  }
+
+  function onStripPointerDown(e) {
+    if (!stripEl || e.button !== 0) return;
+    dragging = true;
+    dragMoved = false;
+    dragStartX = e.clientX;
+    dragScrollLeft = stripEl.scrollLeft;
+    stripEl.classList.add("is-dragging");
+    stripEl.setPointerCapture?.(e.pointerId);
+  }
+
+  function onStripPointerMove(e) {
+    if (!dragging || !stripEl) return;
+    const dx = e.clientX - dragStartX;
+    if (Math.abs(dx) > 4) dragMoved = true;
+    stripEl.scrollLeft = dragScrollLeft - dx;
+    updateScrub();
+  }
+
+  function onStripPointerUp() {
+    if (!stripEl) return;
+    dragging = false;
+    stripEl.classList.remove("is-dragging");
+  }
+
+  function onStripClickCapture(e) {
+    if (dragMoved) {
+      e.preventDefault();
+      e.stopPropagation();
+      dragMoved = false;
+    }
+  }
+
+  function updateScrub() {
+    if (!stripEl || !modalScrubThumb) return;
+    const max = stripEl.scrollWidth - stripEl.clientWidth;
+    const ratio = max > 0 ? stripEl.scrollLeft / max : 0;
+    modalScrubThumb.style.transform = `scaleX(${Math.max(0.08, ratio)})`;
+    if (modalScrubLabel) {
+      modalScrubLabel.textContent = String(Math.round(ratio * 100)).padStart(2, "0");
+    }
   }
 
   function escapeHtml(str) {
