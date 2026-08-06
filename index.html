@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>One Flow Man</title>
+    <meta
+      name="description"
+      content="Portfolio for One Flow Man and Treestyle Studios — games, music, and more."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Syne:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body data-brand="primary">
+    <div class="bg-stage" id="bg-stage" aria-hidden="true">
+      <div class="bg-veil"></div>
+      <div class="rgb-split" id="rgb-split"></div>
+      <div class="bg-noise" id="bg-noise"></div>
+    </div>
+
+    <div class="site">
+      <header class="topbar">
+        <nav class="socials" id="socials" aria-label="Social links"></nav>
+      </header>
+
+      <main class="hero">
+        <div class="brand">
+          <h1 class="brand-mark">
+            <span>One</span>
+            <span class="flow">Flow</span>
+            <span>Man</span>
+          </h1>
+          <p class="brand-secondary">Treestyle Studios</p>
+        </div>
+        <p class="tagline">Games, music, and whatever else makes it through the static.</p>
+        <nav class="nav" aria-label="Portfolio sections">
+          <button type="button" data-modal="about">About</button>
+          <button type="button" data-modal="games">Games</button>
+          <button type="button" data-modal="music">Music</button>
+        </nav>
+      </main>
+
+      <footer class="footer">One Flow Man · Treestyle Studios</footer>
+    </div>
+
+    <div class="modal" id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-backdrop" id="modal-backdrop"></div>
+      <div class="modal-panel">
+        <div class="modal-header">
+          <h2 class="modal-title" id="modal-title">Portfolio</h2>
+          <button type="button" class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+      </div>
+    </div>
+
+    <script src="js/main.js"></script>
+  </body>
+</html>
