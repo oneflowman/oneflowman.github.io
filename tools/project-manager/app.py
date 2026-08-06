@@ -64,6 +64,8 @@ class ProjectManagerApp(tk.Tk):
         self.selected_category = tk.StringVar(value="games")
         self.selected_id: str | None = None
         self.image_path = tk.StringVar(value="")
+        self._visible_ids: list[str] = []
+        self._loading_form = False
 
         self._build_ui()
         self.refresh_list()
@@ -125,8 +127,9 @@ class ProjectManagerApp(tk.Tk):
             row=0, column=1, padx=(8, 0)
         )
 
-        self.image_hint = ttk.Label(right, text="Relative path or pick a new file to copy in.")
-        self.image_hint.grid(row=5, column=0, columnspan=2, sticky="w", pady=(0, 12))
+        ttk.Label(
+            right, text="Relative path or pick a new file to copy in."
+        ).grid(row=5, column=0, columnspan=2, sticky="w", pady=(0, 12))
 
         action_row = ttk.Frame(right)
         action_row.grid(row=6, column=0, columnspan=2, sticky="ew")
@@ -152,6 +155,26 @@ class ProjectManagerApp(tk.Tk):
         items = self.data.get(key)
         return items if isinstance(items, list) else []
 
+    def set_entry(self, key: str, value: str, *, readonly: bool = False) -> None:
+        entry = self.entries[key]
+        entry.configure(state="normal")
+        entry.delete(0, tk.END)
+        entry.insert(0, value)
+        if readonly:
+            entry.configure(state="readonly")
+
+    def load_project(self, project: dict[str, Any]) -> None:
+        self._loading_form = True
+        try:
+            self.selected_id = project.get("id")
+            self.set_entry("title", project.get("title", ""))
+            self.set_entry("url", project.get("url", ""))
+            self.set_entry("date", project.get("date", ""))
+            self.set_entry("id", project.get("id", ""), readonly=True)
+            self.image_path.set(project.get("image", ""))
+        finally:
+            self._loading_form = False
+
     def refresh_list(self, select_id: str | None = None) -> None:
         self.listbox.delete(0, tk.END)
         items = sorted(
@@ -167,15 +190,25 @@ class ProjectManagerApp(tk.Tk):
 
         if select_id and select_id in self._visible_ids:
             idx = self._visible_ids.index(select_id)
+            self.listbox.selection_clear(0, tk.END)
             self.listbox.selection_set(idx)
+            self.listbox.activate(idx)
             self.listbox.see(idx)
-            self.selected_id = select_id
+            project = next((p for p in items if p.get("id") == select_id), None)
+            if project:
+                self.load_project(project)
+        elif select_id is None:
+            pass
+        else:
+            self.selected_id = None
 
     def on_category_change(self) -> None:
         self.clear_form()
         self.refresh_list()
 
     def on_select(self) -> None:
+        if self._loading_form:
+            return
         sel = self.listbox.curselection()
         if not sel:
             return
@@ -183,26 +216,20 @@ class ProjectManagerApp(tk.Tk):
         project = next((p for p in self.projects() if p.get("id") == project_id), None)
         if not project:
             return
-        self.selected_id = project_id
-        self.entries["title"].delete(0, tk.END)
-        self.entries["title"].insert(0, project.get("title", ""))
-        self.entries["url"].delete(0, tk.END)
-        self.entries["url"].insert(0, project.get("url", ""))
-        self.entries["date"].delete(0, tk.END)
-        self.entries["date"].insert(0, project.get("date", ""))
-        self.entries["id"].delete(0, tk.END)
-        self.entries["id"].insert(0, project.get("id", ""))
-        self.entries["id"].configure(state="readonly")
-        self.image_path.set(project.get("image", ""))
+        self.load_project(project)
 
     def clear_form(self) -> None:
-        self.selected_id = None
-        self.listbox.selection_clear(0, tk.END)
-        for key, entry in self.entries.items():
-            entry.configure(state="normal")
-            entry.delete(0, tk.END)
-        self.entries["date"].insert(0, date.today().isoformat())
-        self.image_path.set("")
+        self._loading_form = True
+        try:
+            self.selected_id = None
+            self.listbox.selection_clear(0, tk.END)
+            self.set_entry("title", "")
+            self.set_entry("url", "")
+            self.set_entry("date", date.today().isoformat())
+            self.set_entry("id", "")
+            self.image_path.set("")
+        finally:
+            self._loading_form = False
 
     def browse_image(self) -> None:
         path = filedialog.askopenfilename(
@@ -236,11 +263,31 @@ class ProjectManagerApp(tk.Tk):
         self.clear_form()
         self.refresh_list()
 
+    def resolve_image(self, image_value: str, project_id: str) -> str | None:
+        image_path = Path(image_value)
+        if image_path.is_file():
+            return copy_image(image_path, project_id)
+
+        rel_image = image_value.replace("\\", "/")
+        if rel_image.startswith("assets/projects/"):
+            if not (ROOT / rel_image).exists():
+                messagebox.showerror(
+                    "Image not found",
+                    f"Could not find {rel_image} under the site root.",
+                )
+                return None
+            return rel_image
+
+        messagebox.showerror(
+            "Invalid image",
+            "Pick an image file, or keep an existing assets/projects/ path.",
+        )
+        return None
+
     def save_project(self) -> None:
         title = self.entries["title"].get().strip()
         url = self.entries["url"].get().strip()
         date_str = self.entries["date"].get().strip()
-        project_id = self.entries["id"].get().strip()
         image_value = self.image_path.get().strip()
         category = self.selected_category.get()
 
@@ -258,8 +305,12 @@ class ProjectManagerApp(tk.Tk):
             return
 
         editing = self.selected_id is not None
-        if not project_id:
-            project_id = slugify(title)
+        # When editing, always keep the selected project's id — never trust a stale field.
+        if editing:
+            project_id = self.selected_id
+        else:
+            typed_id = self.entries["id"].get().strip()
+            project_id = typed_id or slugify(title)
             existing_ids = {p.get("id") for p in self.projects()}
             base = project_id
             n = 2
@@ -267,22 +318,8 @@ class ProjectManagerApp(tk.Tk):
                 project_id = f"{base}-{n}"
                 n += 1
 
-        image_path = Path(image_value)
-        if image_path.is_file():
-            rel_image = copy_image(image_path, project_id)
-        elif image_value.startswith("assets/projects/"):
-            rel_image = image_value.replace("\\", "/")
-            if not (ROOT / rel_image).exists():
-                messagebox.showerror(
-                    "Image not found",
-                    f"Could not find {rel_image} under the site root.",
-                )
-                return
-        else:
-            messagebox.showerror(
-                "Invalid image",
-                "Pick an image file, or keep an existing assets/projects/ path.",
-            )
+        rel_image = self.resolve_image(image_value, project_id)
+        if rel_image is None:
             return
 
         record = {
@@ -295,12 +332,20 @@ class ProjectManagerApp(tk.Tk):
 
         items = list(self.projects())
         if editing:
-            items = [record if p.get("id") == self.selected_id else p for p in items]
-            # If id somehow changed while editing readonly, still replace by selected_id
-            if self.selected_id != project_id:
-                items = [p for p in items if p.get("id") != self.selected_id]
-                if not any(p.get("id") == project_id for p in items):
-                    items.append(record)
+            replaced = False
+            new_items: list[dict[str, Any]] = []
+            for p in items:
+                if p.get("id") == self.selected_id and not replaced:
+                    new_items.append(record)
+                    replaced = True
+                elif p.get("id") == self.selected_id:
+                    # Drop accidental duplicates of the same id
+                    continue
+                else:
+                    new_items.append(p)
+            if not replaced:
+                new_items.append(record)
+            items = new_items
         else:
             if any(p.get("id") == project_id for p in items):
                 messagebox.showerror(
@@ -313,12 +358,6 @@ class ProjectManagerApp(tk.Tk):
         self.data[category] = items
         save_data(self.data)
         self.refresh_list(select_id=project_id)
-        self.selected_id = project_id
-        self.entries["id"].configure(state="normal")
-        self.entries["id"].delete(0, tk.END)
-        self.entries["id"].insert(0, project_id)
-        self.entries["id"].configure(state="readonly")
-        self.image_path.set(rel_image)
         messagebox.showinfo("Saved", f"Saved '{title}' to {category}.")
 
 

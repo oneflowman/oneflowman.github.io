@@ -35,8 +35,43 @@
       "id": "one-pong-man",
       "title": "One Pong Man (Game Jam)",
       "url": "https://oneflowman.itch.io/one-pong-man",
-      "image": "assets/projects/onepongman.png",
-      "date": "2024-01-01"
+      "image": "assets/projects/one-pong-man.png",
+      "date": "2022-07-25"
+    },
+    {
+      "id": "lord-o-pirates",
+      "title": "Lord O' Pirates",
+      "url": "https://store.steampowered.com/app/2377620/Lord_O_Pirates/",
+      "image": "assets/projects/lord-o-pirates.png",
+      "date": "2025-07-16"
+    },
+    {
+      "id": "le-biscuit",
+      "title": "Le Biscuit (Game Jam)",
+      "url": "https://oneflowman.itch.io/le-biscuit",
+      "image": "assets/projects/le-biscuit.png",
+      "date": "2025-08-30"
+    },
+    {
+      "id": "chalupacabras",
+      "title": "Chalupacabras",
+      "url": "https://oneflowman.itch.io/chalupacabras",
+      "image": "assets/projects/chalupacabras.png",
+      "date": "2025-10-14"
+    },
+    {
+      "id": "67mih",
+      "title": "67 Minutes in Heaven",
+      "url": "https://store.steampowered.com/app/4673140/67_Minutes_in_Heaven/",
+      "image": "assets/projects/67mih.png",
+      "date": "2026-04-08"
+    },
+    {
+      "id": "thiccfoot",
+      "title": "Thiccfoot (Wishlist)",
+      "url": "https://store.steampowered.com/app/4799620/Thiccfoot/",
+      "image": "assets/projects/thiccfoot.png",
+      "date": "2026-11-17"
     }
   ],
   "music": [
@@ -44,8 +79,92 @@
       "id": "sake-single",
       "title": "Sake (Single)",
       "url": "https://open.spotify.com/track/5mOeLP2g2QvO3ZYD6JfGLV?si=50b69e7c2e464353",
-      "image": "assets/projects/sake.png",
-      "date": "2024-01-01"
+      "image": "assets/projects/sake-single.png",
+      "date": "2019-10-23"
+    },
+    {
+      "id": "bookworm",
+      "title": "Bookworm (Music Video)",
+      "url": "https://www.youtube.com/watch?v=NREz9KaECdQ",
+      "image": "assets/projects/bookworm.png",
+      "date": "2016-08-23"
+    },
+    {
+      "id": "rootz",
+      "title": "Rootz (Treestyle Album)",
+      "url": "https://open.spotify.com/album/1c46rbeEe8OnPy4333ySGc",
+      "image": "assets/projects/rootz.jpg",
+      "date": "2018-04-22"
+    },
+    {
+      "id": "heroforfun",
+      "title": "Hero For Fun (Album)",
+      "url": "https://open.spotify.com/album/3CqVsLbYGiT0FML60RM4Eb",
+      "image": "assets/projects/heroforfun.png",
+      "date": "2020-02-14"
+    },
+    {
+      "id": "quarantinedreamzmv",
+      "title": "Quarantine Dreamz (Music Video)",
+      "url": "https://www.youtube.com/watch?v=fiP9TMYnBwg",
+      "image": "assets/projects/quarantinedreamzmv.png",
+      "date": "2020-05-23"
+    },
+    {
+      "id": "quarantinedreamz",
+      "title": "Quarantine Dreamz (Single)",
+      "url": "https://open.spotify.com/album/60J6X6pHoBG5lz5pKzNjMG",
+      "image": "assets/projects/quarantinedreamz.png",
+      "date": "2020-05-23"
+    },
+    {
+      "id": "fightit",
+      "title": "Fight It (Single)",
+      "url": "https://open.spotify.com/album/0l0DVvwrAfqUwdIFwmL4YV",
+      "image": "assets/projects/fightit.png",
+      "date": "2020-11-05"
+    },
+    {
+      "id": "xxxmas",
+      "title": "XXXMas (Single)",
+      "url": "https://open.spotify.com/track/7f5GlNIm9NidiNDBlGb9vW?autoplay_ok=1",
+      "image": "assets/projects/xxxmas.png",
+      "date": "2020-12-25"
+    },
+    {
+      "id": "chillaf",
+      "title": "Chill AF (Single)",
+      "url": "https://open.spotify.com/album/3wFfKLcnZMXHUEEywhXnbD",
+      "image": "assets/projects/chillaf.png",
+      "date": "2020-12-18"
+    },
+    {
+      "id": "slowpokeep",
+      "title": "Slowpoke (Treestyle EP)",
+      "url": "https://open.spotify.com/album/7rDsUiNlpmsmJ5fTKk1hB8",
+      "image": "assets/projects/slowpokeep.png",
+      "date": "2021-04-20"
+    },
+    {
+      "id": "sheik",
+      "title": "Sheik (Single)",
+      "url": "https://open.spotify.com/album/7q6rzY18tTymb40GBOBoui",
+      "image": "assets/projects/sheik.png",
+      "date": "2021-08-31"
+    },
+    {
+      "id": "slowpokemv",
+      "title": "Slowpoke (Music Video)",
+      "url": "https://www.youtube.com/watch?v=QuWth73uq0g",
+      "image": "assets/projects/slowpokemv.jpg",
+      "date": "2021-04-20"
+    },
+    {
+      "id": "spacecowboy",
+      "title": "Space Cowboy (Album)",
+      "url": "https://open.spotify.com/album/1QomIUH59LSQyshGKXFjs1",
+      "image": "assets/projects/spacecowboy.png",
+      "date": "2024-04-20"
     }
   ]
 }
