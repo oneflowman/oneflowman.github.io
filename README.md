@@ -10,10 +10,7 @@ Because the site loads `data/projects.json` via `fetch`, use a local server from
 python -m http.server 8080
 ```
 
-Then open:
-
-- [http://localhost:8080/](http://localhost:8080/) — One Flow Man primary (variant 2B)
-- [http://localhost:8080/index-dual.html](http://localhost:8080/index-dual.html) — dual-brand hero (variant 2A)
+Then open [http://localhost:8080/](http://localhost:8080/).
 
 ## Update games / music
 
