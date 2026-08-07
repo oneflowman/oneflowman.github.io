@@ -2549,17 +2549,9 @@ img {
     letter-spacing: 0.12em;
   }
 
-  .modal-hint {
-    display: none;
-  }
-
+  .modal-hint,
   .modal-panel[data-kind="games"] .modal-hint {
-    display: block;
-    top: auto;
-    bottom: 3.4rem;
-    right: 1rem;
-    left: auto;
-    font-size: 0.72rem;
+    display: none;
   }
 
   .modal-panel[data-kind="games"] .modal-ghost {
@@ -2600,14 +2592,32 @@ img {
       0 0 0 2px rgba(62, 207, 207, 0.45);
   }
 
+  /* Vertical feed — horizontal scrub feels awkward on phones */
+  .modal-body:has(.chaos-strip) {
+    align-items: stretch;
+  }
+
   .chaos-strip {
+    flex-direction: column;
     align-items: center;
-    padding: 0.85rem 1rem 0.65rem;
-    gap: 1rem;
+    justify-content: flex-start;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: contain;
+    padding: 0.5rem 1.15rem 2.25rem;
+    gap: 1.35rem;
+    cursor: default;
+    -webkit-overflow-scrolling: touch;
   }
 
   .chaos-strip.is-games {
     align-items: center;
+  }
+
+  .chaos-strip.is-dragging {
+    cursor: default;
   }
 
   .chaos-card,
@@ -2628,15 +2638,38 @@ img {
   .chaos-strip.is-music .chaos-card.size-lg,
   .chaos-strip.is-music .chaos-card.size-xl,
   .chaos-strip.is-music .chaos-card.is-featured {
-    width: min(68vw, 240px);
+    width: min(82vw, 300px);
+    /* Flatten collage lifts so a vertical stack reads cleanly */
+    --lift: 0px;
+    transform: translateY(0) rotate(var(--rot, 0deg));
+  }
+
+  .chaos-card:hover,
+  .chaos-card:focus-visible {
+    transform: translateY(-8px) rotate(0deg) scale(1.04);
+  }
+
+  .chaos-strip.is-games .chaos-card:hover,
+  .chaos-strip.is-games .chaos-card:focus-visible {
+    transform: translateY(-6px) rotate(0deg) scale(1.02);
   }
 
   .chaos-strip.is-games .chaos-title {
-    font-size: clamp(0.5rem, 2.6vw, 0.62rem);
+    font-size: clamp(0.58rem, 3.2vw, 0.78rem);
   }
 
   .chaos-strip.is-games .chaos-card.is-featured .chaos-title {
-    font-size: clamp(0.55rem, 2.9vw, 0.7rem);
+    font-size: clamp(0.64rem, 3.5vw, 0.88rem);
+  }
+
+  .chaos-end,
+  .chaos-strip.is-games .chaos-end {
+    width: min(82vw, 300px);
+    height: 4.5rem;
+  }
+
+  .modal-scrub {
+    display: none !important;
   }
 
   .chaos-stamp {

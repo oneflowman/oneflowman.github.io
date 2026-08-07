@@ -32,12 +32,17 @@
   let activeKind = null;
   let stripEl = null;
   let reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const stripVerticalMq = window.matchMedia("(max-width: 640px)");
 
-  // drag state for horizontal strip
+  // drag state for horizontal strip (desktop)
   let dragging = false;
   let dragStartX = 0;
   let dragScrollLeft = 0;
   let dragMoved = false;
+
+  function isStripVertical() {
+    return stripVerticalMq.matches;
+  }
 
   // about ink canopy parallax + root/branch tag marquees
   let aboutEl = null;
@@ -185,6 +190,8 @@
 
   function onPanelWheel(e) {
     if (!stripEl || activeKind === "about") return;
+    // Mobile uses native vertical scroll
+    if (isStripVertical()) return;
     const delta = e.deltaY + e.deltaX;
     if (!delta) return;
     e.preventDefault();
@@ -755,10 +762,15 @@
     modalMeta.textContent = range ? `${countLabel} · ${range}` : countLabel;
     if (modalHint) {
       modalHint.hidden = false;
-      modalHint.textContent =
-        kind === "games" ? "← SELECT →" : kind === "music" ? "flip the racks →" : "drag / scroll →";
+      if (isStripVertical()) {
+        modalHint.textContent =
+          kind === "games" ? "↓ SELECT ↓" : kind === "music" ? "flip the crates ↓" : "scroll ↓";
+      } else {
+        modalHint.textContent =
+          kind === "games" ? "← SELECT →" : kind === "music" ? "flip the racks →" : "drag / scroll →";
+      }
     }
-    if (modalScrub) modalScrub.hidden = false;
+    if (modalScrub) modalScrub.hidden = isStripVertical();
   }
 
   function renderModalBody(kind) {
@@ -961,6 +973,14 @@
     }
 
     stripEl.scrollLeft = 0;
+    stripEl.scrollTop = 0;
+
+    // Vertical mobile feed: native scroll only — no drag/scrub hijacking
+    if (isStripVertical()) {
+      if (modalScrub) modalScrub.hidden = true;
+      return;
+    }
+
     // Force layout so overflow exists before first scrub update
     void stripEl.offsetWidth;
     updateScrub();
