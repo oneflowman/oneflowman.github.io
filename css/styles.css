@@ -1648,9 +1648,9 @@ img {
 
 .ink-canopy-l,
 .ink-canopy-r {
-  top: calc(-2% + 8px);
+  top: calc(-2% + 26px);
   bottom: -2%;
-  width: clamp(110px, 16vw, 210px);
+  width: 280px;
 }
 
 .ink-canopy-l {
@@ -1664,15 +1664,15 @@ img {
 .ink-canopy-t {
   left: 2%;
   right: 2%;
-  top: calc(-6% + 8px);
-  height: clamp(72px, 11vh, 120px);
+  top: calc(-6% + 26px);
+  height: 50px;
 }
 
 .ink-canopy-tl,
 .ink-canopy-tr {
-  top: calc(-5% + 8px);
-  width: clamp(340px, 55vw, 720px);
-  height: clamp(110px, 18vh, 190px);
+  top: calc(-5% + 26px);
+  width: 900px;
+  height: 212px;
 }
 
 .ink-canopy-tl {
@@ -2388,21 +2388,17 @@ img {
 
   .ink-canopy-l,
   .ink-canopy-r {
-    width: 72px;
+    width: min(280px, 28vw);
   }
 
   .ink-canopy-t {
     left: 1%;
     right: 1%;
-    top: calc(-4% + 8px);
-    height: 72px;
   }
 
   .ink-canopy-tl,
   .ink-canopy-tr {
-    top: calc(-4% + 8px);
-    width: min(280px, 72vw);
-    height: 130px;
+    width: min(900px, 92vw);
   }
 
   .ink-roots {
