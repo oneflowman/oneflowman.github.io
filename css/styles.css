@@ -2161,6 +2161,42 @@ img {
   opacity: 0;
 }
 
+/* project-name tags ride the branches, under trunk + canopy */
+.ink-branch-tags {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.ink-branch-tag {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.18rem 0.42rem;
+  border: 2px solid #000;
+  background: var(--ink-paper);
+  color: #111;
+  font-family: var(--font-display);
+  font-size: clamp(0.58rem, 0.9vw, 0.72rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55);
+  will-change: transform;
+}
+
+.ink-branch-tag.is-glow {
+  background: #1a2e22;
+  color: var(--ink-glow);
+}
+
+.ink-branch-tag.is-circuit {
+  background: #142428;
+  color: var(--ink-circuit);
+}
+
 /* roots sprout from under the trunk, not over it */
 .ink-roots {
   position: relative;
@@ -2553,6 +2589,11 @@ img {
   .ink-root-tag {
     font-size: 0.64rem;
     padding: 0.18rem 0.4rem;
+  }
+
+  .ink-branch-tag {
+    font-size: 0.58rem;
+    padding: 0.14rem 0.34rem;
   }
 
   .about-ink {

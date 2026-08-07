@@ -39,10 +39,10 @@
   let dragScrollLeft = 0;
   let dragMoved = false;
 
-  // about ink canopy parallax + root tag marquee
+  // about ink canopy parallax + root/branch tag marquees
   let aboutEl = null;
   let onAboutPointerMove = null;
-  let rootRafId = 0;
+  let inkMarqueeRafId = 0;
 
   async function init() {
     try {
@@ -293,16 +293,16 @@
         aboutEl.style.setProperty("--gaze-y", y.toFixed(3));
       };
       modalPanel?.addEventListener("pointermove", onAboutPointerMove);
-      startRootMarquee();
+      startInkMarquee();
     } else {
-      placeRootTagsStatic();
+      placeInkTagsStatic();
     }
   }
 
   function unwireAbout() {
-    if (rootRafId) {
-      cancelAnimationFrame(rootRafId);
-      rootRafId = 0;
+    if (inkMarqueeRafId) {
+      cancelAnimationFrame(inkMarqueeRafId);
+      inkMarqueeRafId = 0;
     }
     if (onAboutPointerMove) {
       modalPanel?.removeEventListener("pointermove", onAboutPointerMove);
@@ -320,6 +320,11 @@
     return Array.from(aboutEl.querySelectorAll(".root-rail"));
   }
 
+  function getBranchRails() {
+    if (!aboutEl) return [];
+    return Array.from(aboutEl.querySelectorAll(".branch-rail"));
+  }
+
   function placeTagOnRail(tag, rail, dist, svg) {
     const width = svg.clientWidth;
     const height = svg.clientHeight;
@@ -330,11 +335,31 @@
     const p1 = rail.getPointAtLength(d);
     const p2 = rail.getPointAtLength(Math.min(d + 3, len));
     let angle = (Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180) / Math.PI;
-    // Leftmost two roots travel leftward — flip tags so they stay upright
+    // Paths run leftward on roots 0–1; flip so labels stay upright
     const rootIndex = Number(tag.dataset.root) || 0;
     if (rootIndex <= 1) angle += 180;
     const x = (p1.x / 1200) * width;
     const y = (p1.y / 360) * height;
+    tag.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;
+  }
+
+  function placeTagOnBranchRail(tag, rail, dist, container) {
+    const len = rail.getTotalLength();
+    if (!len) return;
+    const d = ((dist % len) + len) % len;
+    const p1 = rail.getPointAtLength(d);
+    const p2 = rail.getPointAtLength(Math.min(d + 4, len));
+    const ctm = rail.getScreenCTM();
+    if (!ctm) return;
+    const rect = container.getBoundingClientRect();
+    const x1 = ctm.a * p1.x + ctm.c * p1.y + ctm.e;
+    const y1 = ctm.b * p1.x + ctm.d * p1.y + ctm.f;
+    const x2 = ctm.a * p2.x + ctm.c * p2.y + ctm.e;
+    const y2 = ctm.b * p2.x + ctm.d * p2.y + ctm.f;
+    let angle = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+    if (angle > 90 || angle < -90) angle += 180;
+    const x = x1 - rect.left;
+    const y = y1 - rect.top;
     tag.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;
   }
 
@@ -345,40 +370,90 @@
     return Number(tag.dataset.shift) || 0;
   }
 
-  function placeRootTagsStatic() {
+  function placeInkTagsStatic() {
     if (!aboutEl) return;
-    const svg = aboutEl.querySelector(".ink-root-svg");
-    const rails = getRootRails();
-    if (!svg || !rails.length) return;
-    aboutEl.querySelectorAll(".ink-root-tag").forEach((tag) => {
-      const rail = rails[Number(tag.dataset.root) || 0];
-      if (!rail) return;
-      placeTagOnRail(tag, rail, tagShiftOnRail(tag, rail), svg);
-    });
+    const rootSvg = aboutEl.querySelector(".ink-root-svg");
+    const rootRails = getRootRails();
+    if (rootSvg && rootRails.length) {
+      aboutEl.querySelectorAll(".ink-root-tag").forEach((tag) => {
+        const rail = rootRails[Number(tag.dataset.root) || 0];
+        if (!rail) return;
+        placeTagOnRail(tag, rail, tagShiftOnRail(tag, rail), rootSvg);
+      });
+    }
+
+    const branchRails = getBranchRails();
+    const branchLayer = aboutEl.querySelector(".ink-branch-tags");
+    if (branchLayer && branchRails.length) {
+      aboutEl.querySelectorAll(".ink-branch-tag").forEach((tag) => {
+        const rail = branchRails[Number(tag.dataset.branch) || 0];
+        if (!rail) return;
+        placeTagOnBranchRail(tag, rail, tagShiftOnRail(tag, rail), branchLayer);
+      });
+    }
   }
 
-  function startRootMarquee() {
+  function startInkMarquee() {
     if (!aboutEl || reduceMotion) return;
-    const svg = aboutEl.querySelector(".ink-root-svg");
-    const rails = getRootRails();
-    const tags = Array.from(aboutEl.querySelectorAll(".ink-root-tag"));
-    if (!svg || !rails.length || !tags.length) return;
+    const rootSvg = aboutEl.querySelector(".ink-root-svg");
+    const rootRails = getRootRails();
+    const rootTags = Array.from(aboutEl.querySelectorAll(".ink-root-tag"));
+    const branchRails = getBranchRails();
+    const branchTags = Array.from(aboutEl.querySelectorAll(".ink-branch-tag"));
+    const branchLayer = aboutEl.querySelector(".ink-branch-tags");
+    if (!rootTags.length && !branchTags.length) return;
 
     const started = performance.now();
     const tick = (now) => {
       if (!aboutEl) return;
       const elapsed = (now - started) / 1000;
-      tags.forEach((tag) => {
-        const rootIndex = Number(tag.dataset.root) || 0;
-        const rail = rails[rootIndex];
-        if (!rail) return;
-        const speed = 26 + rootIndex * 5;
-        const shift = tagShiftOnRail(tag, rail);
-        placeTagOnRail(tag, rail, elapsed * speed + shift, svg);
-      });
-      rootRafId = requestAnimationFrame(tick);
+
+      if (rootSvg && rootRails.length) {
+        rootTags.forEach((tag) => {
+          const rootIndex = Number(tag.dataset.root) || 0;
+          const rail = rootRails[rootIndex];
+          if (!rail) return;
+          const speed = 26 + rootIndex * 5;
+          const shift = tagShiftOnRail(tag, rail);
+          // Negative speed: tags climb from tips up into the trunk
+          placeTagOnRail(tag, rail, -elapsed * speed + shift, rootSvg);
+        });
+      }
+
+      if (branchLayer && branchRails.length) {
+        branchTags.forEach((tag) => {
+          const branchIndex = Number(tag.dataset.branch) || 0;
+          const rail = branchRails[branchIndex];
+          if (!rail) return;
+          const speed = 22 + (branchIndex % 5) * 4;
+          const shift = tagShiftOnRail(tag, rail);
+          // Positive speed: project names flow out from the trunk
+          placeTagOnBranchRail(tag, rail, elapsed * speed + shift, branchLayer);
+        });
+      }
+
+      inkMarqueeRafId = requestAnimationFrame(tick);
     };
-    rootRafId = requestAnimationFrame(tick);
+    inkMarqueeRafId = requestAnimationFrame(tick);
+  }
+
+  function collectProjectNames() {
+    const items = [
+      ...(data.games || []).map((item) => ({ item, kind: "game" })),
+      ...(data.music || []).map((item) => ({ item, kind: "music" })),
+    ]
+      .filter(({ item }) => item && item.title)
+      .sort((a, b) => String(b.item.date || "").localeCompare(String(a.item.date || "")));
+    const seen = new Set();
+    const names = [];
+    for (const { item, kind } of items) {
+      const title = String(item.title).trim();
+      const key = title.toLowerCase();
+      if (!title || seen.has(key)) continue;
+      seen.add(key);
+      names.push({ title, kind });
+    }
+    return names;
   }
 
   function buildRootMarquee(traits) {
@@ -446,7 +521,7 @@
     `;
   }
 
-  function buildBranches() {
+  function buildBranches(projects) {
     // Behind trunk → clear flanks → ~95° climbing zigzags into canopy
     const paths = [
       // left flanks
@@ -467,6 +542,13 @@
       "M680 250 L674 202 L724 191 L716 132 L768 120 L760 58 L815 46 L808 -4 L866 -17 L857 -84 L902 -94 L895 -149 L957 -162 L950 -220",
     ];
 
+    const rails = paths
+      .map(
+        (d, i) =>
+          `<path class="branch-rail" data-branch="${i}" d="${d}" fill="none" />`
+      )
+      .join("");
+
     const strokes = paths
       .map(
         (d, i) => `
@@ -476,12 +558,42 @@
       )
       .join("");
 
+    const list = Array.isArray(projects) ? projects : [];
+    const tags = list.map((project, i) => ({
+      title: project.title,
+      kind: project.kind,
+      branch: i % paths.length,
+      index: i,
+    }));
+
+    const perBranch = {};
+    tags.forEach((t) => {
+      perBranch[t.branch] = (perBranch[t.branch] || 0) + 1;
+    });
+    const counters = {};
+    const tagHtml = tags
+      .map((t) => {
+        counters[t.branch] = counters[t.branch] || 0;
+        const slot = counters[t.branch];
+        counters[t.branch] += 1;
+        const count = perBranch[t.branch];
+        // Keep names on the outer stretch so they clear the trunk carving
+        const shiftFrac = count === 1 ? 0.34 : 0.22 + (slot / count) * 0.62;
+        const tone = t.kind === "game" ? "is-glow" : "is-circuit";
+        return `<span class="ink-branch-tag ${tone}" data-branch="${t.branch}" data-shift-frac="${shiftFrac.toFixed(3)}">${escapeHtml(
+          t.title
+        )}</span>`;
+      })
+      .join("");
+
     return `
       <div class="ink-branches" aria-hidden="true">
         <svg class="ink-branch-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" focusable="false">
+          <g class="branch-rails" opacity="0">${rails}</g>
           <g class="branch-strokes">${strokes}</g>
         </svg>
       </div>
+      <div class="ink-branch-tags" aria-hidden="true">${tagHtml}</div>
     `;
   }
 
@@ -662,6 +774,7 @@
         "Self-Disciplined Doer",
         "Lover & Hater",
       ];
+      const projects = collectProjectNames();
 
       return `
         <div class="about-ink" style="--gaze-x:0; --gaze-y:0">
@@ -699,7 +812,7 @@
             <circle class="node" cx="640" cy="640" r="3.5" style="animation-delay:-0.9s" />
           </svg>
 
-          ${buildBranches()}
+          ${buildBranches(projects)}
 
           <div class="ink-fall" aria-hidden="true">${buildFallingLeaves(28)}</div>
 
