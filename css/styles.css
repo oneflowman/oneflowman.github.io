@@ -2120,6 +2120,48 @@ img {
   min-width: 0;
 }
 
+/* branches rise from upper trunk into the canopy, under the leaves */
+.ink-branches {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+  transform: translate3d(calc(var(--gaze-x) * -4px), calc(var(--gaze-y) * -3px), 0);
+}
+
+.ink-branch-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.ink-branch-svg .branch-bark {
+  fill: none;
+  stroke: #2a1c12;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 900;
+  stroke-dashoffset: 900;
+  animation: root-draw 1.9s var(--ease-out) forwards;
+  opacity: 0.92;
+}
+
+.ink-branch-svg .branch-sap {
+  fill: none;
+  stroke: rgba(168, 120, 72, 0.7);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 10 8;
+  animation:
+    root-sap-in 1.4s var(--ease-out) forwards,
+    circuit-flow 2.4s linear infinite;
+  opacity: 0;
+}
+
 /* roots sprout from under the trunk, not over it */
 .ink-roots {
   position: relative;
@@ -2553,7 +2595,9 @@ img {
   .ink-brand-seal,
   .modal-stamp.is-growing::after,
   .ink-root-svg .root-bark,
-  .ink-root-svg .root-sap {
+  .ink-root-svg .root-sap,
+  .ink-branch-svg .branch-bark,
+  .ink-branch-svg .branch-sap {
     animation: none !important;
   }
 
@@ -2562,11 +2606,13 @@ img {
   }
 
   .ink-circuit .trace-root,
-  .ink-root-svg .root-bark {
+  .ink-root-svg .root-bark,
+  .ink-branch-svg .branch-bark {
     stroke-dashoffset: 0;
   }
 
-  .ink-root-svg .root-sap {
+  .ink-root-svg .root-sap,
+  .ink-branch-svg .branch-sap {
     opacity: 0.85;
   }
 

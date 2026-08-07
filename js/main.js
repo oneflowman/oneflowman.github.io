@@ -443,6 +443,39 @@
     `;
   }
 
+  function buildBranches() {
+    // From behind trunk center, splay outward/upward into the canopy (no tags)
+    const paths = [
+      "M600 320 C480 280 340 220 220 140 C120 80 50 35 0 0",
+      "M600 360 C470 330 320 280 180 200 C90 145 35 90 0 45",
+      "M600 280 C500 230 360 160 230 90 C130 40 55 10 0 -10",
+      "M600 400 C460 370 300 320 160 240 C75 185 25 120 0 70",
+      "M600 460 C440 440 280 400 140 320 C65 265 20 200 0 140",
+      "M600 320 C720 280 860 220 980 140 C1080 80 1150 35 1200 0",
+      "M600 360 C730 330 880 280 1020 200 C1110 145 1165 90 1200 45",
+      "M600 280 C700 230 840 160 970 90 C1070 40 1145 10 1200 -10",
+      "M600 400 C740 370 900 320 1040 240 C1125 185 1175 120 1200 70",
+      "M600 460 C760 440 920 400 1060 320 C1135 265 1180 200 1200 140",
+    ];
+
+    const strokes = paths
+      .map(
+        (d, i) => `
+          <path class="branch-bark" d="${d}" style="animation-delay:${(0.15 + i * 0.1).toFixed(2)}s" />
+          <path class="branch-sap" d="${d}" style="animation-delay:${(0.35 + i * 0.1).toFixed(2)}s" />
+        `
+      )
+      .join("");
+
+    return `
+      <div class="ink-branches" aria-hidden="true">
+        <svg class="ink-branch-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" focusable="false">
+          <g class="branch-strokes">${strokes}</g>
+        </svg>
+      </div>
+    `;
+  }
+
   function inkLeafMarkup(index, side) {
     // Mirror pairs share seeds so L/R canopies stay symmetrical
     const seedSide = side === 1 ? 0 : side === 5 ? 4 : side;
@@ -637,6 +670,8 @@
             <circle class="node" cx="520" cy="560" r="3.5" style="animation-delay:-0.9s" />
             <circle class="node" cx="700" cy="430" r="4" style="animation-delay:-1.2s" />
           </svg>
+
+          ${buildBranches()}
 
           <div class="ink-fall" aria-hidden="true">${buildFallingLeaves(28)}</div>
 
