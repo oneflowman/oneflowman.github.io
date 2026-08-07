@@ -227,6 +227,7 @@
       modalStamp.textContent = stamps[kind] || "// SIGNAL";
       modalStamp.classList.toggle("is-growing", kind === "about");
     }
+    modal?.setAttribute("data-kind", kind);
     modalPanel?.setAttribute("data-kind", kind);
     setCloseLabel(kind);
     syncMusicTags(kind);
@@ -250,6 +251,8 @@
     syncMusicTags(null);
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
+    modal.removeAttribute("data-kind");
+    modalPanel?.removeAttribute("data-kind");
     document.body.classList.remove("modal-open");
     modalOpen = false;
     activeKind = null;

@@ -24,17 +24,19 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
   font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
-  overflow-x: hidden;
 }
 
 body.modal-open {
   overflow: hidden;
+  touch-action: none;
 }
 
 a {
@@ -455,9 +457,18 @@ img {
 
 /* —— Modal: full-bleed chaos room —— */
 .modal {
+  /* Size to the visual viewport so close controls can't sit past the
+     visible edge when layout viewport grows (common on mobile Chrome). */
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
   z-index: 20;
+  width: 100%;
+  width: 100dvw;
+  max-width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -482,6 +493,8 @@ img {
   z-index: 1;
   display: grid;
   grid-template-rows: auto 1fr auto;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
   background:
@@ -498,12 +511,15 @@ img {
   filter: none;
 }
 
-.modal-panel[data-kind="music"] {
+.modal[data-kind="music"] {
   --music-green: #7dff6a;
   --music-green-deep: #2f9e45;
   --music-purple: #b967ff;
   --music-purple-deep: #6b2bbf;
   --music-ink: #0a0710;
+}
+
+.modal-panel[data-kind="music"] {
   background:
     radial-gradient(ellipse at 18% 12%, rgba(185, 103, 255, 0.28), transparent 42%),
     radial-gradient(ellipse at 88% 78%, rgba(125, 255, 106, 0.16), transparent 44%),
@@ -573,6 +589,8 @@ img {
   justify-content: space-between;
   gap: 1rem;
   padding: 1.5rem clamp(1.2rem, 4vw, 3rem) 0.5rem;
+  /* Keep title clear of the fixed Quit/Bail control */
+  padding-right: max(6.5rem, calc(env(safe-area-inset-right, 0px) + 6rem));
   pointer-events: none;
 }
 
@@ -639,11 +657,15 @@ img {
 }
 
 .modal-close {
+  /* Absolute inside the dvw-sized modal (not the transformed panel) */
   position: absolute;
-  top: 1.1rem;
-  right: 1.1rem;
-  z-index: 5;
+  top: max(1.1rem, calc(env(safe-area-inset-top, 0px) + 0.65rem));
+  right: max(1.1rem, calc(env(safe-area-inset-right, 0px) + 0.65rem));
+  left: auto;
+  z-index: 30;
   min-width: 4.5rem;
+  max-width: calc(100% - 1.5rem);
+  min-height: 2.75rem;
   padding: 0.55rem 0.85rem;
   border: 2px solid var(--accent);
   background: rgba(226, 59, 46, 0.12);
@@ -655,6 +677,13 @@ img {
   transform: rotate(4deg);
   box-shadow: 4px 4px 0 rgba(226, 59, 46, 0.35);
   transition: transform 0.2s var(--ease-out), background 0.2s ease, box-shadow 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal.is-open .modal-close {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .modal-close:hover,
@@ -1189,7 +1218,7 @@ img {
   transform: rotate(-2deg);
 }
 
-.modal-panel[data-kind="music"] .modal-close {
+.modal[data-kind="music"] .modal-close {
   border: 3px solid var(--music-purple);
   background: rgba(107, 43, 191, 0.22);
   color: var(--music-green);
@@ -1199,8 +1228,8 @@ img {
   box-shadow: 4px 4px 0 rgba(125, 255, 106, 0.35);
 }
 
-.modal-panel[data-kind="music"] .modal-close:hover,
-.modal-panel[data-kind="music"] .modal-close:focus-visible {
+.modal[data-kind="music"] .modal-close:hover,
+.modal[data-kind="music"] .modal-close:focus-visible {
   background: rgba(125, 255, 106, 0.2);
   color: #f3efe6;
   border-color: var(--music-green);
@@ -1244,10 +1273,13 @@ img {
 }
 
 /* —— Games: PSX / N64 select-screen —— */
-.modal-panel[data-kind="games"] {
+.modal[data-kind="games"] {
   --games-teal: #3ecfcf;
   --games-amber: #e8b84a;
   --games-frame: #1a2230;
+}
+
+.modal-panel[data-kind="games"] {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(62, 207, 207, 0.12), transparent 50%),
     radial-gradient(ellipse at 80% 100%, rgba(232, 184, 74, 0.07), transparent 42%),
@@ -1323,7 +1355,7 @@ img {
   animation: hint-pulse 1.4s steps(2, end) infinite;
 }
 
-.modal-panel[data-kind="games"] .modal-close {
+.modal[data-kind="games"] .modal-close {
   border: 3px solid var(--games-teal);
   border-style: outset;
   background: rgba(10, 16, 32, 0.92);
@@ -1333,11 +1365,11 @@ img {
   letter-spacing: 0.08em;
   transform: none;
   box-shadow: 4px 4px 0 #000;
-  transition: background 0.15s steps(1), color 0.15s steps(1), box-shadow 0.15s steps(1);
+  transition: background 0.15s steps(1), color 0.15s steps(1), box-shadow 0.15s steps(1), opacity 0.2s ease;
 }
 
-.modal-panel[data-kind="games"] .modal-close:hover,
-.modal-panel[data-kind="games"] .modal-close:focus-visible {
+.modal[data-kind="games"] .modal-close:hover,
+.modal[data-kind="games"] .modal-close:focus-visible {
   background: var(--games-teal);
   color: #05060a;
   transform: none;
@@ -1541,13 +1573,16 @@ img {
 }
 
 /* —— About: graphic novel / ink canopy —— */
-.modal-panel[data-kind="about"] {
+.modal[data-kind="about"] {
   --ink: #0b0d0c;
   --ink-panel: #121614;
   --ink-paper: #e8e2d4;
   --ink-moss: #3d8f5a;
   --ink-glow: #5dff9a;
   --ink-circuit: #c9a227;
+}
+
+.modal-panel[data-kind="about"] {
   background:
     radial-gradient(ellipse at 50% 0%, rgba(61, 143, 90, 0.18), transparent 45%),
     radial-gradient(ellipse at 100% 80%, rgba(62, 207, 207, 0.08), transparent 40%),
@@ -1613,7 +1648,7 @@ img {
     -2px 0 0 rgba(62, 207, 207, 0.35);
 }
 
-.modal-panel[data-kind="about"] .modal-close {
+.modal[data-kind="about"] .modal-close {
   border: 3px solid #000;
   background: var(--ink-paper);
   color: #111;
@@ -1623,8 +1658,8 @@ img {
   box-shadow: 4px 4px 0 var(--ink-moss);
 }
 
-.modal-panel[data-kind="about"] .modal-close:hover,
-.modal-panel[data-kind="about"] .modal-close:focus-visible {
+.modal[data-kind="about"] .modal-close:hover,
+.modal[data-kind="about"] .modal-close:focus-visible {
   background: var(--ink-glow);
   color: #041008;
   transform: rotate(-2deg) scale(1.04);
@@ -1811,6 +1846,7 @@ img {
   height: 100%;
   pointer-events: none;
   opacity: 0.7;
+  overflow: hidden;
   transform: translate3d(calc(var(--gaze-x) * -6px), calc(var(--gaze-y) * -4px), 0);
 }
 
@@ -2459,24 +2495,58 @@ img {
 @media (max-width: 640px) {
   .topbar {
     justify-content: center;
+    padding: 0.85rem 0.85rem 0.35rem;
   }
 
   .socials {
     flex-wrap: wrap;
     justify-content: center;
+    gap: 0.45rem 0.65rem;
+    max-width: 100%;
+  }
+
+  .socials a {
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.1rem;
+  }
+
+  .hero {
+    padding: 1.25rem 1rem 2.5rem;
+  }
+
+  .hero-panel {
+    padding: 1.5rem 0.75rem;
+    gap: 1.1rem;
   }
 
   .brand-mark {
     white-space: normal;
-    font-size: clamp(2.5rem, 13vw, 3.5rem);
+    font-size: clamp(2.35rem, 12vw, 3.25rem);
   }
 
   .nav {
-    gap: 0.85rem 1.1rem;
+    gap: 0.7rem 1rem;
+  }
+
+  .nav button,
+  .nav a {
+    font-size: clamp(1.1rem, 5.2vw, 1.35rem);
+    padding: 0.45rem 0.2rem;
+  }
+
+  .modal-header {
+    padding: 0.85rem 1rem 0.2rem;
+    padding-right: max(5.75rem, calc(env(safe-area-inset-right, 0px) + 5.25rem));
   }
 
   .modal-title {
-    font-size: clamp(3rem, 18vw, 4.6rem);
+    font-size: clamp(2.35rem, 13vw, 3.35rem);
+  }
+
+  .modal-meta {
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
   }
 
   .modal-hint {
@@ -2485,6 +2555,15 @@ img {
 
   .modal-panel[data-kind="games"] .modal-hint {
     display: block;
+    top: auto;
+    bottom: 3.4rem;
+    right: 1rem;
+    left: auto;
+    font-size: 0.72rem;
+  }
+
+  .modal-panel[data-kind="games"] .modal-ghost {
+    font-size: clamp(1.6rem, 8vw, 2.6rem);
   }
 
   .music-tags .tag-c,
@@ -2497,15 +2576,38 @@ img {
   }
 
   .modal-close {
-    top: 0.75rem;
-    right: 0.75rem;
-    min-width: 0;
-    padding: 0.45rem 0.65rem;
+    top: max(0.75rem, calc(env(safe-area-inset-top, 0px) + 0.5rem));
+    right: max(0.75rem, calc(env(safe-area-inset-right, 0px) + 0.5rem));
+    min-width: 3.25rem;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  /* Games Quit uses pixel font; desktop 0.55rem wins on specificity and
+     becomes ~9px — unreadable on phones. */
+  .modal[data-kind="games"] .modal-close {
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    padding: 0.65rem 0.8rem;
+    min-width: 3.75rem;
+    min-height: 2.85rem;
+    border-width: 3px;
+    background: rgba(10, 16, 32, 0.96);
+    box-shadow:
+      4px 4px 0 #000,
+      0 0 0 2px rgba(62, 207, 207, 0.45);
   }
 
   .chaos-strip {
-    padding: 1.25rem 1.1rem 1rem;
+    align-items: center;
+    padding: 0.85rem 1rem 0.65rem;
     gap: 1rem;
+  }
+
+  .chaos-strip.is-games {
+    align-items: center;
   }
 
   .chaos-card,
@@ -2513,47 +2615,91 @@ img {
   .chaos-card.size-md,
   .chaos-card.size-lg,
   .chaos-card.size-xl,
-  .chaos-card.is-featured {
-    width: min(72vw, 260px);
+  .chaos-card.is-featured,
+  .chaos-strip.is-games .chaos-card,
+  .chaos-strip.is-games .chaos-card.size-sm,
+  .chaos-strip.is-games .chaos-card.size-md,
+  .chaos-strip.is-games .chaos-card.size-lg,
+  .chaos-strip.is-games .chaos-card.size-xl,
+  .chaos-strip.is-games .chaos-card.is-featured,
+  .chaos-strip.is-music .chaos-card,
+  .chaos-strip.is-music .chaos-card.size-sm,
+  .chaos-strip.is-music .chaos-card.size-md,
+  .chaos-strip.is-music .chaos-card.size-lg,
+  .chaos-strip.is-music .chaos-card.size-xl,
+  .chaos-strip.is-music .chaos-card.is-featured {
+    width: min(68vw, 240px);
+  }
+
+  .chaos-strip.is-games .chaos-title {
+    font-size: clamp(0.5rem, 2.6vw, 0.62rem);
+  }
+
+  .chaos-strip.is-games .chaos-card.is-featured .chaos-title {
+    font-size: clamp(0.55rem, 2.9vw, 0.7rem);
+  }
+
+  .chaos-stamp {
+    font-size: 0.62rem;
+    max-width: min(10rem, 65%);
+    right: -4px;
   }
 
   .modal-panel[data-kind="about"] .modal-title {
-    font-size: clamp(2.8rem, 16vw, 4rem);
+    font-size: clamp(2.2rem, 12vw, 3.1rem);
   }
 
   .ink-tree {
     justify-content: flex-start;
     height: auto;
     min-height: 100%;
+    overflow-x: clip;
     overflow-y: auto;
-    padding: 0.25rem 0 1rem;
+    overscroll-behavior-x: none;
+    padding: 0.35rem 0 1.25rem;
   }
 
   .ink-trunk {
-    width: calc(100% - 5.5rem);
+    width: calc(100% - 2.75rem);
     max-height: none;
-    border-radius: 28% 24% 4% 6% / 6% 7% 3% 2%;
+    /* Softer radius so overflow:hidden does not chew side copy */
+    border-radius: 16% 14% 3% 4% / 3.5% 4% 2% 1.5%;
+    padding: 1rem 1.05rem 1.15rem;
   }
 
   .ink-page {
     grid-template-columns: 1fr;
     height: auto;
     max-height: none;
-    padding: 0.2rem 0.15rem 0.85rem;
+    padding: 0.35rem 0.35rem 0.95rem;
     overflow: visible;
     gap: 0.85rem;
     justify-items: center;
   }
 
   .ink-hollow {
-    width: min(72%, 260px);
-    max-height: 38vh;
+    width: min(70%, 220px);
+    max-height: 32vh;
   }
 
   .ink-carving {
     width: 100%;
-    border-radius: 18% 22% 16% 20% / 12% 14% 12% 10%;
-    padding: 0.9rem 0.95rem 1rem;
+    border-radius: 10% 12% 8% 10% / 6% 8% 6% 5%;
+    padding: 1rem 1.25rem 1.1rem;
+  }
+
+  .ink-carve h3 {
+    font-size: clamp(1.45rem, 7vw, 1.85rem);
+  }
+
+  .ink-copy {
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
+
+  /* Tags sit behind the rounded trunk and peek through corner cutouts on narrow screens */
+  .ink-branch-tags {
+    display: none;
   }
 
   .ink-carve-studio {
@@ -2566,24 +2712,30 @@ img {
     text-align: left;
   }
 
+  /* Side leaves sit behind the trunk so they frame without covering copy */
   .ink-canopy-l,
   .ink-canopy-r {
-    width: min(280px, 28vw);
+    width: min(150px, 26vw);
+    z-index: 1;
   }
 
   .ink-canopy-t {
-    left: 1%;
-    right: 1%;
+    left: 2%;
+    right: 2%;
+    height: 42px;
+    z-index: 4;
   }
 
   .ink-canopy-tl,
   .ink-canopy-tr {
-    width: min(900px, 92vw);
+    width: min(520px, 78vw);
+    height: 140px;
+    z-index: 3;
   }
 
   .ink-roots {
-    width: calc(100% - 2rem);
-    height: 140px;
+    width: calc(100% - 1.5rem);
+    height: 150px;
   }
 
   .ink-root-tag {
@@ -2597,8 +2749,19 @@ img {
   }
 
   .about-ink {
-    overflow-x: hidden;
+    overflow-x: clip;
     overflow-y: auto;
+    overscroll-behavior-x: none;
+  }
+
+  .ink-branches,
+  .ink-circuit {
+    overflow: hidden;
+    contain: paint;
+  }
+
+  .modal-panel {
+    overflow-x: clip;
   }
 }
 
