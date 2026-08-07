@@ -39,6 +39,10 @@
   let dragScrollLeft = 0;
   let dragMoved = false;
 
+  // about ink canopy parallax
+  let aboutEl = null;
+  let onAboutPointerMove = null;
+
   async function init() {
     try {
       const res = await fetch(DATA_URL);
@@ -201,7 +205,8 @@
   function setCloseLabel(kind) {
     const label = modalClose?.querySelector("span") || modalClose;
     if (!label) return;
-    label.textContent = kind === "games" ? "Quit" : "Bail";
+    label.textContent =
+      kind === "games" ? "Quit" : kind === "about" ? "Flip" : "Bail";
   }
 
   function openModal(kind) {
@@ -209,13 +214,13 @@
     activeKind = kind;
     const titles = { about: "About", games: "Games", music: "Music" };
     const stamps = {
-      about: "// WHO DIS",
+      about: "// INK & ROOT",
       games: "// BOOT SEQUENCE",
       music: "// FROM THE CRATES",
     };
 
     modalTitle.textContent = titles[kind] || "Portfolio";
-    const ghosts = { about: "About", games: "READY", music: "CIPHER" };
+    const ghosts = { about: "INK", games: "READY", music: "CIPHER" };
     if (modalGhost) modalGhost.textContent = ghosts[kind] || "PORTFOLIO";
     if (modalStamp) modalStamp.textContent = stamps[kind] || "// SIGNAL";
     modalPanel?.setAttribute("data-kind", kind);
@@ -225,6 +230,7 @@
     setModalMeta(kind);
     modalBody.innerHTML = renderModalBody(kind);
     wireStrip();
+    wireAbout();
 
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
@@ -236,6 +242,7 @@
   function closeModal() {
     if (!modal) return;
     unwireStrip();
+    unwireAbout();
     syncMusicTags(null);
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
@@ -266,6 +273,99 @@
       return;
     }
     tags?.remove();
+  }
+
+  function wireAbout() {
+    unwireAbout();
+    aboutEl = document.querySelector(".about-ink");
+    if (!aboutEl || reduceMotion) return;
+
+    onAboutPointerMove = (e) => {
+      const rect = aboutEl.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+      aboutEl.style.setProperty("--gaze-x", x.toFixed(3));
+      aboutEl.style.setProperty("--gaze-y", y.toFixed(3));
+    };
+
+    modalPanel?.addEventListener("pointermove", onAboutPointerMove);
+  }
+
+  function unwireAbout() {
+    if (onAboutPointerMove) {
+      modalPanel?.removeEventListener("pointermove", onAboutPointerMove);
+      onAboutPointerMove = null;
+    }
+    if (aboutEl) {
+      aboutEl.style.removeProperty("--gaze-x");
+      aboutEl.style.removeProperty("--gaze-y");
+      aboutEl = null;
+    }
+  }
+
+  function inkLeafMarkup(index, side) {
+    const n = vibe(index, side + 1);
+    const n2 = vibe(index, side + 7);
+    const n3 = vibe(index, side + 13);
+    const n4 = vibe(index, side + 19);
+    // denser stacking: multiple layers along the border axis
+    const layer = index % 3;
+    const along = Math.floor(index / 3);
+    const size = 22 + Math.round(n * 38) + layer * 4;
+    let x;
+    let y;
+    let rot;
+    if (side === 0) {
+      x = `${(-18 + layer * 28 + n2 * 18).toFixed(1)}%`;
+      y = `${((along * 7.2 + n3 * 4) % 108) - 4}%`;
+      rot = `${(-55 + n4 * 90).toFixed(1)}deg`;
+    } else if (side === 1) {
+      x = `${(42 + layer * 22 + n2 * 20).toFixed(1)}%`;
+      y = `${((along * 7.2 + n3 * 4) % 108) - 4}%`;
+      rot = `${(95 + n4 * 90).toFixed(1)}deg`;
+    } else if (side === 2) {
+      x = `${((along * 6.5 + n2 * 4) % 108) - 4}%`;
+      y = `${(-24 + layer * 26 + n3 * 16).toFixed(1)}%`;
+      rot = `${(-30 + n4 * 50).toFixed(1)}deg`;
+    } else {
+      x = `${((along * 6.5 + n2 * 4) % 108) - 4}%`;
+      y = `${(28 + layer * 24 + n3 * 18).toFixed(1)}%`;
+      rot = `${(150 + n4 * 50).toFixed(1)}deg`;
+    }
+
+    const tone = n > 0.7 ? "is-tech" : n > 0.38 ? "is-bright" : "is-deep";
+    const sc = (0.85 + n2 * 0.65).toFixed(2);
+    const dur = `${(2.8 + n3 * 3.2).toFixed(2)}s`;
+    const delay = `${(-n4 * 4.5).toFixed(2)}s`;
+    const op = (0.8 + n * 0.2).toFixed(2);
+    const z = 10 + layer * 3 + Math.round(n * 4);
+    const showTech = n > 0.58;
+
+    return `
+      <span
+        class="ink-leaf ${tone}"
+        style="--x:${x};--y:${y};--rot:${rot};--s:${size}px;--sc:${sc};--dur:${dur};--delay:${delay};--op:${op};z-index:${z}"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 40 64" focusable="false">
+          <path class="blade" d="M20 2 C30 14 38 26 35 42 C32 54 24 61 20 62 C16 61 8 54 5 42 C2 26 10 14 20 2Z" />
+          <path class="vein" d="M20 12 L20 54" />
+          <path class="vein" d="M20 28 C14 32 11 38 10 44" />
+          <path class="vein" d="M20 34 C26 38 29 43 30 48" />
+          ${
+            showTech
+              ? `<path class="tech" d="M27 24 L34 24 L34 31 M31 24 L31 20" />`
+              : ""
+          }
+        </svg>
+      </span>
+    `;
+  }
+
+  function buildInkCanopy(side, count) {
+    let html = "";
+    for (let i = 0; i < count; i += 1) html += inkLeafMarkup(i, side);
+    return html;
   }
 
   function setModalMeta(kind) {
@@ -315,38 +415,84 @@
   function renderModalBody(kind) {
     if (kind === "about") {
       const about = data.about || {};
+      const traits = [
+        "Game Dev",
+        "Rapper",
+        "Freestylist",
+        "Horror Enthusiast",
+        "Hip Hop Head",
+        "Borzoi Lover",
+        "Programmer",
+        "Gamer",
+        "ADHD Dreamer",
+        "Self-Disciplined Doer",
+        "Lover & Hater",
+      ];
+      const traitHtml = traits
+        .map((trait, i) => {
+          const tilt = ((vibe(i, 9) - 0.5) * 8).toFixed(1);
+          return `<span class="ink-trait" style="--i:${i};--tilt:${tilt}deg">${escapeHtml(
+            trait
+          )}</span>`;
+        })
+        .join("");
+
       return `
-        <div class="about-chaos">
-          <div class="about-sticker about-sticker-a" aria-hidden="true">ONE FLOW</div>
-          <div class="about-sticker about-sticker-b" aria-hidden="true">TREESTYLE</div>
-          <section class="about-card about-card-one">
-            <img
-              class="about-avatar"
-              src="assets/profile/me.png"
-              alt="One Flow Man"
-              width="108"
-              height="108"
-            />
-            <p class="about-kicker">artist</p>
-            <h3>One <span class="accent">Flow</span> Man</h3>
-            <p class="about-copy">${escapeHtml(about.oneFlowMan || "")}</p>
-          </section>
-          <section class="about-card about-card-two">
-            <img
-              class="about-avatar"
-              src="assets/profile/ts.png"
-              alt="Treestyle Studios"
-              width="108"
-              height="108"
-            />
-            <p class="about-kicker">studio</p>
-            <h3>Treestyle Studios</h3>
-            <p class="about-copy">${escapeHtml(about.treestyleStudios || "")}</p>
-          </section>
-          <p class="about-marquee" aria-hidden="true">
-            <span>Game Dev · Rapper · Freestylist · Horror Enthusiast · Hip Hop Head · Borzoi Lover · Programmer · Gamer · ADHD Dreamer · Self-Disciplined Doer · Lover &amp; Hater · </span>
-            <span>Game Dev · Rapper · Freestylist · Horror Enthusiast · Hip Hop Head · Borzoi Lover · Programmer · Gamer · ADHD Dreamer · Self-Disciplined Doer · Lover &amp; Hater · </span>
-          </p>
+        <div class="about-ink" style="--gaze-x:0; --gaze-y:0">
+          <div class="ink-speed" aria-hidden="true"></div>
+
+          <svg class="ink-circuit" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <path class="trace-root" style="animation-delay:0.05s" d="M120 120 C220 200 260 320 300 420 C340 520 300 620 220 720" />
+            <path class="trace-root" style="animation-delay:0.2s" d="M1080 80 C980 180 940 300 900 420 C860 540 920 640 1040 740" />
+            <path class="trace-root" style="animation-delay:0.35s" d="M300 420 C420 390 560 400 700 430 C820 455 940 440 1040 400" />
+            <path class="trace" d="M180 260 L260 260 L260 340 L340 340" />
+            <path class="trace" d="M960 220 L880 220 L880 300 L800 300 L800 360" />
+            <path class="trace" d="M420 560 L520 560 L520 640 L640 640" />
+            <circle class="node" cx="260" cy="260" r="3.5" />
+            <circle class="node" cx="880" cy="300" r="3.5" style="animation-delay:-0.4s" />
+            <circle class="node" cx="520" cy="560" r="3.5" style="animation-delay:-0.9s" />
+            <circle class="node" cx="700" cy="430" r="4" style="animation-delay:-1.2s" />
+          </svg>
+
+          <div class="ink-canopy ink-canopy-l" aria-hidden="true">${buildInkCanopy(0, 42)}</div>
+          <div class="ink-canopy ink-canopy-r" aria-hidden="true">${buildInkCanopy(1, 42)}</div>
+          <div class="ink-canopy ink-canopy-t" aria-hidden="true">${buildInkCanopy(2, 36)}</div>
+          <div class="ink-canopy ink-canopy-b" aria-hidden="true">${buildInkCanopy(3, 36)}</div>
+
+          <div class="ink-page">
+            <figure class="ink-panel ink-panel-hero">
+              <img src="assets/profile/me.png" alt="One Flow Man" width="480" height="640" />
+              <span class="ink-halftone" aria-hidden="true"></span>
+              <p class="ink-nameplate">One <span>Flow</span> Man</p>
+            </figure>
+
+            <section class="ink-panel ink-panel-bio">
+              <p class="ink-label">Chapter 01</p>
+              <h3>One <span>Flow</span> Man</h3>
+              <p class="ink-copy">${escapeHtml(about.oneFlowMan || "")}</p>
+            </section>
+
+            <section class="ink-panel ink-panel-studio">
+              <div class="ink-studio-row">
+                <img
+                  class="ink-studio-mark"
+                  src="assets/profile/ts.png"
+                  alt="Treestyle Studios"
+                  width="96"
+                  height="96"
+                />
+                <div>
+                  <p class="ink-label">Chapter 02</p>
+                  <h3>Treestyle Studios</h3>
+                  <p class="ink-copy">${escapeHtml(about.treestyleStudios || "")}</p>
+                </div>
+              </div>
+            </section>
+
+            <div class="ink-panel ink-panel-traits" aria-hidden="true">
+              ${traitHtml}
+            </div>
+          </div>
         </div>
       `;
     }
