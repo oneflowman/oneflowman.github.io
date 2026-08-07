@@ -200,14 +200,16 @@
     const stamps = {
       about: "// WHO DIS",
       games: "// BOOT SEQUENCE",
-      music: "// PRESS PLAY",
+      music: "// FROM THE CRATES",
     };
 
     modalTitle.textContent = titles[kind] || "Portfolio";
-    if (modalGhost) modalGhost.textContent = titles[kind] || "PORTFOLIO";
+    const ghosts = { about: "About", games: "READY", music: "CIPHER" };
+    if (modalGhost) modalGhost.textContent = ghosts[kind] || "PORTFOLIO";
     if (modalStamp) modalStamp.textContent = stamps[kind] || "// SIGNAL";
     modalPanel?.setAttribute("data-kind", kind);
     setCloseLabel(kind);
+    syncMusicTags(kind);
 
     setModalMeta(kind);
     modalBody.innerHTML = renderModalBody(kind);
@@ -223,12 +225,36 @@
   function closeModal() {
     if (!modal) return;
     unwireStrip();
+    syncMusicTags(null);
     modal.classList.remove("is-open");
     modal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("modal-open");
     modalOpen = false;
     activeKind = null;
     setCloseLabel(null);
+  }
+
+  function syncMusicTags(kind) {
+    const fx = modalPanel?.querySelector(".modal-fx");
+    if (!fx) return;
+    let tags = fx.querySelector(".music-tags");
+    if (kind === "music") {
+      if (!tags) {
+        tags = document.createElement("div");
+        tags.className = "music-tags";
+        tags.setAttribute("aria-hidden", "true");
+        tags.innerHTML = `
+          <span class="tag-a">BOOM BAP</span>
+          <span class="tag-b">MASK UP</span>
+          <span class="tag-c">RAW TAPES</span>
+          <span class="tag-d">UNDERGROUND</span>
+          <span class="tag-e">ALL CAPS</span>
+        `;
+        fx.appendChild(tags);
+      }
+      return;
+    }
+    tags?.remove();
   }
 
   function setModalMeta(kind) {
@@ -256,7 +282,7 @@
       .map(Number);
     const countLabel =
       kind === "music"
-        ? `${items.length} tracks`
+        ? `${items.length} joints`
         : `${items.length} GAMES`;
     let range = "";
     if (years.length) {
@@ -269,7 +295,8 @@
     modalMeta.textContent = range ? `${countLabel} · ${range}` : countLabel;
     if (modalHint) {
       modalHint.hidden = false;
-      modalHint.textContent = kind === "games" ? "← SELECT →" : "drag / scroll →";
+      modalHint.textContent =
+        kind === "games" ? "← SELECT →" : kind === "music" ? "flip the racks →" : "drag / scroll →";
     }
     if (modalScrub) modalScrub.hidden = false;
   }
@@ -319,7 +346,7 @@
     }
 
     const kindClass = kind === "music" ? "is-music" : "is-games";
-    const endLabel = kind === "games" ? "NO DATA" : "end of tape";
+    const endLabel = kind === "games" ? "NO DATA" : "side B";
     return `
       <div class="chaos-strip ${kindClass}" id="chaos-strip" tabindex="0">
         ${items.map((item, index) => projectTile(item, index, kind)).join("")}
