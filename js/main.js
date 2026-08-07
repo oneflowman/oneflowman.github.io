@@ -49,7 +49,16 @@
   // about ink canopy parallax + root/branch tag marquees
   let aboutEl = null;
   let onAboutPointerMove = null;
+  let onAboutResize = null;
   let inkMarqueeRafId = 0;
+
+  // Mobile leaf-bushel placement relative to the trunk
+  const LEAF_BUSHEL = {
+    anchorX: -41,
+    anchorY: -84,
+    widthPad: 12,
+    height: 185,
+  };
 
   async function init() {
     try {
@@ -337,10 +346,34 @@
     tags?.remove();
   }
 
+  function syncMobileCanopy() {
+    if (!aboutEl) return;
+    const canopy = aboutEl.querySelector(".ink-canopy-mobile");
+    const trunk = aboutEl.querySelector(".ink-trunk");
+    const scroller = aboutEl.querySelector(".about-ink-scroll") || aboutEl;
+    if (!canopy || !trunk) return;
+    const aboutRect = aboutEl.getBoundingClientRect();
+    const trunkRect = trunk.getBoundingClientRect();
+    const top =
+      trunkRect.top - aboutRect.top + scroller.scrollTop + LEAF_BUSHEL.anchorY;
+    const left = trunkRect.left - aboutRect.left + LEAF_BUSHEL.anchorX;
+    canopy.style.top = `${top}px`;
+    canopy.style.left = `${left}px`;
+    canopy.style.width = `${trunkRect.width + LEAF_BUSHEL.widthPad}px`;
+    canopy.style.height = `${LEAF_BUSHEL.height}px`;
+  }
+
   function wireAbout() {
     unwireAbout();
     aboutEl = document.querySelector(".about-ink");
     if (!aboutEl) return;
+
+    const scroller = aboutEl.querySelector(".about-ink-scroll") || aboutEl;
+    syncMobileCanopy();
+    onAboutResize = () => syncMobileCanopy();
+    window.addEventListener("resize", onAboutResize);
+    scroller.addEventListener("scroll", onAboutResize, { passive: true });
+    requestAnimationFrame(() => syncMobileCanopy());
 
     if (!reduceMotion) {
       onAboutPointerMove = (e) => {
@@ -365,6 +398,12 @@
     if (onAboutPointerMove) {
       modalPanel?.removeEventListener("pointermove", onAboutPointerMove);
       onAboutPointerMove = null;
+    }
+    if (onAboutResize) {
+      window.removeEventListener("resize", onAboutResize);
+      const scroller = aboutEl?.querySelector(".about-ink-scroll") || aboutEl;
+      scroller?.removeEventListener("scroll", onAboutResize);
+      onAboutResize = null;
     }
     if (aboutEl) {
       aboutEl.style.removeProperty("--gaze-x");
@@ -743,6 +782,82 @@
     return html;
   }
 
+  /**
+   * Mobile top bushel — left corner + top rim + right corner clusters
+   * hugging the trunk frame (the red-circle zone), not a flat crown on the photo.
+   */
+  function buildMobileTopCanopy() {
+    const slots = [];
+
+    // Left rounded corner of the TRUNK FRAME — quarter-circle down the flank
+    for (let i = 0; i < 8; i += 1) {
+      const t = i / 7;
+      const theta = t * (Math.PI / 2);
+      slots.push({
+        x: 3 + (1 - Math.sin(theta)) * 28,
+        y: 6 + (1 - Math.cos(theta)) * 82,
+        rot: -100 + t * 75,
+        layer: i % 3,
+        seed: i,
+      });
+    }
+    // Right rounded corner (mirror)
+    for (let i = 0; i < 8; i += 1) {
+      const t = i / 7;
+      const theta = t * (Math.PI / 2);
+      slots.push({
+        x: 97 - (1 - Math.sin(theta)) * 28,
+        y: 6 + (1 - Math.cos(theta)) * 82,
+        rot: 100 - t * 75,
+        layer: i % 3,
+        seed: 20 + i,
+      });
+    }
+    // Top rim of the trunk — layered bushel across the bark edge
+    for (let i = 0; i < 10; i += 1) {
+      const t = (i + 0.5) / 10;
+      slots.push({
+        x: 16 + t * 68,
+        y: 2 + (i % 3) * 11 + Math.sin(t * Math.PI) * 3,
+        rot: (t - 0.5) * 40,
+        layer: i % 3,
+        seed: 40 + i,
+      });
+    }
+
+    let html = "";
+    slots.forEach((slot, i) => {
+      const n = vibe(slot.seed, 51);
+      const n2 = vibe(slot.seed, 57);
+      const n3 = vibe(slot.seed, 61);
+      const n4 = vibe(slot.seed, 67);
+      const x = slot.x + (n - 0.5) * 3;
+      const y = slot.y + (n3 - 0.5) * 4;
+      const rot = slot.rot + (n4 - 0.5) * 22;
+      const sizePx = 44 + Math.round(n * 18) + (2 - slot.layer) * 4;
+      const tone = n > 0.66 ? "is-tech" : n > 0.33 ? "is-bright" : "is-deep";
+      const sc = (1.12 + n2 * 0.28).toFixed(2);
+      const op = (0.92 + n * 0.08).toFixed(2);
+      const z = 6 + slot.layer * 5 + Math.round(n * 3);
+
+      html += `
+        <span
+          class="ink-leaf ${tone}"
+          style="--x:${x.toFixed(1)}%;--y:${y.toFixed(1)}%;--rot:${rot.toFixed(1)}deg;--s:${sizePx}px;--sc:${sc};--op:${op};z-index:${z}"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 40 64" focusable="false">
+            <path class="blade" d="M20 2 C30 14 38 26 35 42 C32 54 24 61 20 62 C16 61 8 54 5 42 C2 26 10 14 20 2Z" />
+            <path class="vein" d="M20 12 L20 54" />
+            <path class="vein" d="M20 28 C14 32 11 38 10 44" />
+            <path class="vein" d="M20 34 C26 38 29 43 30 48" />
+          </svg>
+        </span>
+      `;
+    });
+    return html;
+  }
+
   function buildFallingLeaves(count) {
     let html = "";
     for (let i = 0; i < count; i += 1) {
@@ -841,6 +956,7 @@
 
       return `
         <div class="about-ink" style="--gaze-x:0; --gaze-y:0">
+          <div class="about-ink-scroll">
           <div class="ink-speed" aria-hidden="true"></div>
 
           <svg class="ink-circuit" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -877,13 +993,18 @@
 
           ${buildBranches(projects)}
 
-          <div class="ink-fall" aria-hidden="true">${buildFallingLeaves(28)}</div>
+          <div class="ink-fall" aria-hidden="true">${buildFallingLeaves(isStripVertical() ? 0 : 28)}</div>
 
+          ${
+            isStripVertical()
+              ? ""
+              : `
           <div class="ink-canopy ink-canopy-l" aria-hidden="true">${buildInkCanopy(0, 64)}</div>
           <div class="ink-canopy ink-canopy-r" aria-hidden="true">${buildInkCanopy(1, 64)}</div>
           <div class="ink-canopy ink-canopy-t" aria-hidden="true">${buildInkCanopy(2, 120)}</div>
           <div class="ink-canopy ink-canopy-tl" aria-hidden="true">${buildInkCanopy(4, 95)}</div>
-          <div class="ink-canopy ink-canopy-tr" aria-hidden="true">${buildInkCanopy(5, 95)}</div>
+          <div class="ink-canopy ink-canopy-tr" aria-hidden="true">${buildInkCanopy(5, 95)}</div>`
+          }
 
           <div class="ink-tree">
             <div class="ink-trunk">
@@ -922,6 +1043,12 @@
 
             ${buildRootMarquee(traits)}
           </div>
+          </div>
+          ${
+            isStripVertical()
+              ? `<div class="ink-canopy ink-canopy-t ink-canopy-mobile" aria-hidden="true">${buildMobileTopCanopy()}</div>`
+              : ""
+          }
         </div>
       `;
     }

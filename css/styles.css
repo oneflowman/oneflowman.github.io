@@ -1683,6 +1683,14 @@ img {
   isolation: isolate;
 }
 
+.about-ink-scroll {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* stacked leaf canopies along borders */
 .ink-canopy {
   position: absolute;
@@ -1788,7 +1796,8 @@ img {
 .ink-fall {
   position: absolute;
   inset: 0;
-  z-index: 3;
+  /* Behind trunk text so fall opacity never composites over readable copy */
+  z-index: 1;
   pointer-events: none;
   overflow: hidden;
 }
@@ -2682,22 +2691,82 @@ img {
     font-size: clamp(2.2rem, 12vw, 3.1rem);
   }
 
+  /* Pixel/Android Chrome: animated grain + hundreds of filtered leaves thrash
+     compositor layers so header/bio/studio sections flash independently. */
+  .modal-panel[data-kind="about"] .modal-grain {
+    animation: none;
+    opacity: 0.12;
+    transform: none;
+  }
+
+  .modal-stamp.is-growing::after {
+    animation: none;
+    width: 1.35em;
+  }
+
+  .modal-panel[data-kind="about"] .modal-header {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+
   .ink-tree {
+    position: relative;
+    z-index: 2;
     justify-content: flex-start;
     height: auto;
     min-height: 100%;
-    overflow-x: clip;
-    overflow-y: auto;
-    overscroll-behavior-x: none;
-    padding: 0.35rem 0 1.25rem;
+    /* Single scroll owner is .about-ink — nested overflow thrash on Android */
+    overflow: visible;
+    /* Room above the trunk so the synced bushel isn't clipped by overflow */
+    padding: 2.75rem 0 1.25rem;
   }
 
   .ink-trunk {
+    position: relative;
+    z-index: 2;
     width: calc(100% - 2.75rem);
     max-height: none;
     /* Softer radius so overflow:hidden does not chew side copy */
     border-radius: 16% 14% 3% 4% / 3.5% 4% 2% 1.5%;
     padding: 1rem 1.05rem 1.15rem;
+    /* Skip blur slam — filter animations flicker on Adreno/Mali */
+    animation: none;
+  }
+
+  .ink-hollow,
+  .ink-carving {
+    animation: none;
+    opacity: 1;
+    filter: none;
+  }
+
+  .ink-hollow img {
+    /* Cheaper than animated filter stacks over the carving */
+    filter: contrast(1.08) saturate(0.82) brightness(0.94);
+  }
+
+  .ink-brand-seal {
+    animation: none;
+  }
+
+  .ink-leaf {
+    animation: none;
+    will-change: auto;
+    filter: none;
+  }
+
+  .ink-leaf.is-tech {
+    filter: none;
+  }
+
+  .ink-fall {
+    display: none;
+  }
+
+  .ink-trunk-grain,
+  .ink-carving::before {
+    mix-blend-mode: normal;
+    opacity: 0.14;
   }
 
   .ink-page {
@@ -2745,26 +2814,18 @@ img {
     text-align: left;
   }
 
-  /* Side leaves sit behind the trunk so they frame without covering copy */
-  .ink-canopy-l,
-  .ink-canopy-r {
-    width: min(150px, 26vw);
-    z-index: 1;
+  /* Mobile bushel: above the scroller so it can drape over the trunk frame */
+  .ink-canopy-t.ink-canopy-mobile {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 185px;
+    z-index: 20;
+    overflow: visible;
+    pointer-events: none;
   }
 
-  .ink-canopy-t {
-    left: 2%;
-    right: 2%;
-    height: 42px;
-    z-index: 4;
-  }
-
-  .ink-canopy-tl,
-  .ink-canopy-tr {
-    width: min(520px, 78vw);
-    height: 140px;
-    z-index: 3;
-  }
 
   .ink-roots {
     width: calc(100% - 1.5rem);
@@ -2774,15 +2835,32 @@ img {
   .ink-root-tag {
     font-size: 0.64rem;
     padding: 0.18rem 0.4rem;
+    will-change: auto;
   }
 
   .ink-branch-tag {
     font-size: 0.58rem;
     padding: 0.14rem 0.34rem;
+    will-change: auto;
   }
 
   .about-ink {
-    overflow-x: clip;
+    /* Outer shell stays visible so the bushel can overhang the trunk */
+    overflow: visible;
+    position: relative;
+    isolation: auto;
+  }
+
+  .modal-panel[data-kind="about"] .modal-body {
+    overflow: visible;
+  }
+
+  .about-ink-scroll {
+    position: relative;
+    z-index: 1;
+    height: 100%;
+    min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior-x: none;
   }
@@ -2867,3 +2945,4 @@ img {
     animation: none;
   }
 }
+
