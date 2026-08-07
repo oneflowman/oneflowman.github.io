@@ -246,7 +246,7 @@
       .map((item) => yearFromDate(item.date))
       .filter(Boolean)
       .map(Number);
-    const countLabel = `${items.length} ${kind === "music" ? "tracks" : "drops"}`;
+    const countLabel = `${items.length} ${kind === "music" ? "tracks" : "RELEASES"}`;
     let range = "";
     if (years.length) {
       const min = Math.min(...years);
@@ -268,18 +268,32 @@
           <div class="about-sticker about-sticker-a" aria-hidden="true">ONE FLOW</div>
           <div class="about-sticker about-sticker-b" aria-hidden="true">TREESTYLE</div>
           <section class="about-card about-card-one">
-            <p class="about-kicker">alias</p>
+            <img
+              class="about-avatar"
+              src="images/profile/me.png"
+              alt="One Flow Man"
+              width="108"
+              height="108"
+            />
+            <p class="about-kicker">artist</p>
             <h3>One <span class="accent">Flow</span> Man</h3>
             <p class="about-copy">${escapeHtml(about.oneFlowMan || "")}</p>
           </section>
           <section class="about-card about-card-two">
+            <img
+              class="about-avatar"
+              src="images/profile/ts.png"
+              alt="Treestyle Studios"
+              width="108"
+              height="108"
+            />
             <p class="about-kicker">studio</p>
             <h3>Treestyle Studios</h3>
             <p class="about-copy">${escapeHtml(about.treestyleStudios || "")}</p>
           </section>
           <p class="about-marquee" aria-hidden="true">
-            <span>games · music · glitch · chaos · games · music · glitch · chaos · </span>
-            <span>games · music · glitch · chaos · games · music · glitch · chaos · </span>
+            <span>Game Dev · Rapper · Freestylist · Horror Enthusiast · Hip Hop Head · Borzoi Lover · Programmer · Gamer · ADHD Dreamer · Self-Disciplined Doer · Lover &amp; Hater · </span>
+            <span>Game Dev · Rapper · Freestylist · Horror Enthusiast · Hip Hop Head · Borzoi Lover · Programmer · Gamer · ADHD Dreamer · Self-Disciplined Doer · Lover &amp; Hater · </span>
           </p>
         </div>
       `;
@@ -293,7 +307,7 @@
     const kindClass = kind === "music" ? "is-music" : "is-games";
     return `
       <div class="chaos-strip ${kindClass}" id="chaos-strip" tabindex="0">
-        ${items.map((item, index) => projectTile(item, index, kind)).join("")}
+        ${items.map((item, index) => projectTile(item, index)).join("")}
         <div class="chaos-end" aria-hidden="true">
           <span>end of tape</span>
         </div>
@@ -323,7 +337,7 @@
     return x - Math.floor(x);
   }
 
-  function projectTile(item, index, kind) {
+  function projectTile(item, index) {
     const featured = index === 0;
     const year = yearFromDate(item.date);
     const rot = ((vibe(index, 1) - 0.5) * (featured ? 4 : 14)).toFixed(2);
@@ -331,8 +345,10 @@
     const size = featured ? "xl" : vibe(index, 3) > 0.66 ? "lg" : vibe(index, 3) > 0.33 ? "md" : "sm";
     const delay = Math.min(index, 12) * 60;
     const tape = vibe(index, 4) > 0.55 ? " has-tape" : "";
-    const stampWords = kind === "music" ? ["PLAY", "LOUD", "SPIN", "DROP"] : ["PLAY", "BOOT", "JAM", "WISH"];
-    const stamp = stampWords[index % stampWords.length];
+    const stamp = String(item.tag || "").trim();
+    const stampHtml = stamp
+      ? `<span class="chaos-stamp" aria-hidden="true">${escapeHtml(stamp.toUpperCase())}</span>`
+      : "";
 
     return `
       <a
@@ -343,7 +359,7 @@
         style="--rot: ${rot}deg; --lift: ${lift}px; --stagger: ${delay}ms; --z: ${20 - index}"
         data-index="${index}"
       >
-        <span class="chaos-stamp" aria-hidden="true">${stamp}</span>
+        ${stampHtml}
         <div class="chaos-media">
           <img src="${escapeAttr(item.image)}" alt="${escapeAttr(item.title)}" loading="lazy" draggable="false" />
           <div class="chaos-glitch" aria-hidden="true"></div>

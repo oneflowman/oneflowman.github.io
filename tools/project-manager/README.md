@@ -18,6 +18,7 @@ python tools/project-manager/app.py
 
 - Reads and writes `data/projects.json`
 - Copies chosen images into `assets/projects/`
-- Lets you edit existing projects (title, URL, date, image) and delete with confirmation
+- Lets you edit existing projects (title, URL, date, tag/stamp, image) and delete with confirmation
+- **Tag** is the little corner stamp on each card (leave blank to hide)
 
 After saving, commit and push the updated JSON/images to update GitHub Pages.

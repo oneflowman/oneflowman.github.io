@@ -674,13 +674,20 @@ img {
   top: 12px;
   right: -8px;
   z-index: 4;
-  padding: 0.2rem 0.45rem;
+  width: max-content;
+  max-width: min(14rem, 70%);
+  padding: 0.2rem 0.5rem;
   border: 2px solid var(--accent);
   color: var(--accent);
   font-family: var(--font-display);
   font-size: 0.72rem;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: keep-all;
   background: rgba(7, 7, 11, 0.65);
   transform: rotate(12deg);
   pointer-events: none;
@@ -856,13 +863,28 @@ img {
   min-width: 2ch;
 }
 
-/* —— About chaos —— */
+/* —— About: compact so cards + marquee fit the viewport —— */
+.modal-panel[data-kind="about"] .modal-header {
+  padding-top: 1rem;
+  padding-bottom: 0;
+}
+
+.modal-panel[data-kind="about"] .modal-title {
+  font-size: clamp(2.4rem, 7vw, 4.5rem);
+}
+
 .about-chaos {
   position: relative;
   width: min(960px, 92vw);
+  height: 100%;
+  max-height: 100%;
   margin: 0 auto;
-  min-height: min(60vh, 520px);
-  padding: 1rem;
+  padding: 0.35rem 1rem 2.4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
 .about-sticker {
@@ -896,15 +918,34 @@ img {
   position: relative;
   z-index: 1;
   width: min(420px, 90%);
-  padding: 1.4rem 1.35rem 1.5rem;
+  flex-shrink: 0;
+  padding: 1.05rem 7.25rem 1.1rem 1.2rem;
   background: rgba(243, 239, 230, 0.94);
   color: #141218;
   box-shadow: 10px 14px 0 rgba(226, 59, 46, 0.55);
 }
 
+.about-avatar {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  width: 6.375rem;
+  height: 6.375rem;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--accent);
+  box-shadow: 0 4px 0 rgba(20, 18, 24, 0.2);
+  pointer-events: none;
+}
+
+.about-card-two .about-avatar {
+  border-color: rgba(70, 180, 255, 0.85);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+
 .about-card-one {
   transform: rotate(-3deg);
-  margin-bottom: 1.5rem;
+  margin-bottom: -0.85rem;
 }
 
 .about-card-two {
@@ -917,7 +958,7 @@ img {
 }
 
 .about-kicker {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.25rem;
   font-family: var(--font-display);
   font-size: 0.75rem;
   letter-spacing: 0.22em;
@@ -926,10 +967,10 @@ img {
 }
 
 .about-card h3 {
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.5rem;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  font-size: clamp(1.45rem, 3.4vw, 2.1rem);
   letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 0.95;
@@ -941,8 +982,8 @@ img {
 
 .about-copy {
   margin: 0;
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 0.92rem;
+  line-height: 1.45;
   opacity: 0.88;
 }
 
@@ -950,16 +991,16 @@ img {
   position: absolute;
   left: -5%;
   right: -5%;
-  bottom: -0.5rem;
+  bottom: 0.35rem;
   z-index: 2;
   display: flex;
   overflow: hidden;
   margin: 0;
-  padding: 0.35rem 0;
+  padding: 0.3rem 0;
   background: var(--accent);
   color: #07070b;
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   transform: rotate(-2deg);
@@ -969,7 +1010,7 @@ img {
 .about-marquee span {
   flex-shrink: 0;
   padding-right: 1rem;
-  animation: marquee 12s linear infinite;
+  animation: marquee 28s linear infinite;
 }
 
 .empty-state {
@@ -1096,8 +1137,21 @@ img {
     width: min(72vw, 260px);
   }
 
+  .about-card-one {
+    margin-bottom: -0.35rem;
+  }
+
   .about-card-two {
     margin-left: 0;
+  }
+
+  .about-copy {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .about-chaos {
+    padding-bottom: 2.1rem;
   }
 }
 

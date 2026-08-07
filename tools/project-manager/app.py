@@ -112,27 +112,45 @@ class ProjectManagerApp(tk.Tk):
             ("ID", "id"),
         ]
         self.entries: dict[str, ttk.Entry] = {}
-        for row, (label, key) in enumerate(fields):
+        row = 0
+        for label, key in fields:
             ttk.Label(right, text=label).grid(row=row, column=0, sticky="w", pady=4)
             entry = ttk.Entry(right)
             entry.grid(row=row, column=1, sticky="ew", pady=4, padx=(8, 0))
             self.entries[key] = entry
+            row += 1
 
-        ttk.Label(right, text="Image").grid(row=4, column=0, sticky="w", pady=4)
+        # Tag gets its own clear block so it's obvious you can type anything
+        tag_box = ttk.LabelFrame(right, text="Corner stamp tag — type anything", padding=8)
+        tag_box.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(10, 8))
+        tag_box.columnconfigure(0, weight=1)
+        row += 1
+
+        self.entries["tag"] = ttk.Entry(tag_box)
+        self.entries["tag"].grid(row=0, column=0, sticky="ew")
+        self.entries["tag"].bind("<KeyRelease>", lambda _e: self.update_tag_preview())
+        self.entries["tag"].bind("<FocusOut>", lambda _e: self.update_tag_preview())
+
+        self.tag_preview = ttk.Label(
+            tag_box,
+            text='Preview: (hidden — type a tag)',
+            font=("Segoe UI", 11, "bold"),
+        )
+        self.tag_preview.grid(row=1, column=0, sticky="w", pady=(8, 0))
+
+        ttk.Label(right, text="Image").grid(row=row, column=0, sticky="w", pady=4)
         img_row = ttk.Frame(right)
-        img_row.grid(row=4, column=1, sticky="ew", pady=4, padx=(8, 0))
+        img_row.grid(row=row, column=1, sticky="ew", pady=4, padx=(8, 0))
         img_row.columnconfigure(0, weight=1)
         ttk.Entry(img_row, textvariable=self.image_path).grid(row=0, column=0, sticky="ew")
         ttk.Button(img_row, text="Browse…", command=self.browse_image).grid(
             row=0, column=1, padx=(8, 0)
         )
-
-        ttk.Label(
-            right, text="Relative path or pick a new file to copy in."
-        ).grid(row=5, column=0, columnspan=2, sticky="w", pady=(0, 12))
+        row += 1
 
         action_row = ttk.Frame(right)
-        action_row.grid(row=6, column=0, columnspan=2, sticky="ew")
+        action_row.grid(row=row, column=0, columnspan=2, sticky="ew", pady=(8, 0))
+        row += 1
         ttk.Button(action_row, text="Save Project", command=self.save_project).pack(
             side="left"
         )
@@ -145,8 +163,8 @@ class ProjectManagerApp(tk.Tk):
             text=f"Writes to:\n{DATA_PATH}\nImages go to:\n{PROJECTS_DIR}",
             justify="left",
         )
-        note.grid(row=7, column=0, columnspan=2, sticky="sw", pady=(24, 0))
-        right.rowconfigure(7, weight=1)
+        note.grid(row=row, column=0, columnspan=2, sticky="sw", pady=(24, 0))
+        right.rowconfigure(row, weight=1)
 
         self.clear_form()
 
@@ -163,6 +181,13 @@ class ProjectManagerApp(tk.Tk):
         if readonly:
             entry.configure(state="readonly")
 
+    def update_tag_preview(self) -> None:
+        tag = self.entries["tag"].get().strip()
+        if tag:
+            self.tag_preview.configure(text=f'Preview on card:  "{tag.upper()}"')
+        else:
+            self.tag_preview.configure(text="Preview: (hidden — type a tag)")
+
     def load_project(self, project: dict[str, Any]) -> None:
         self._loading_form = True
         try:
@@ -170,8 +195,10 @@ class ProjectManagerApp(tk.Tk):
             self.set_entry("title", project.get("title", ""))
             self.set_entry("url", project.get("url", ""))
             self.set_entry("date", project.get("date", ""))
+            self.set_entry("tag", project.get("tag", ""))
             self.set_entry("id", project.get("id", ""), readonly=True)
             self.image_path.set(project.get("image", ""))
+            self.update_tag_preview()
         finally:
             self._loading_form = False
 
@@ -226,8 +253,10 @@ class ProjectManagerApp(tk.Tk):
             self.set_entry("title", "")
             self.set_entry("url", "")
             self.set_entry("date", date.today().isoformat())
+            self.set_entry("tag", "")
             self.set_entry("id", "")
             self.image_path.set("")
+            self.update_tag_preview()
         finally:
             self._loading_form = False
 
@@ -288,6 +317,7 @@ class ProjectManagerApp(tk.Tk):
         title = self.entries["title"].get().strip()
         url = self.entries["url"].get().strip()
         date_str = self.entries["date"].get().strip()
+        tag = self.entries["tag"].get().strip()
         image_value = self.image_path.get().strip()
         category = self.selected_category.get()
 
@@ -328,6 +358,7 @@ class ProjectManagerApp(tk.Tk):
             "url": url,
             "image": rel_image,
             "date": date_str,
+            "tag": tag,
         }
 
         items = list(self.projects())
