@@ -30,6 +30,8 @@
   let transitioning = false;
   let modalOpen = false;
   let activeKind = null;
+  /** True only when this session pushed a history entry for the modal (so Bail can history.back()). */
+  let pushedModalState = false;
   let stripEl = null;
   let reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const stripVerticalMq = window.matchMedia("(max-width: 640px)");
@@ -69,6 +71,8 @@
     setupBackgrounds();
     bindNav();
     bindModalChrome();
+    bindModalHistory();
+    openModalFromHash();
   }
 
   function renderSocials() {
@@ -188,6 +192,30 @@
     });
   }
 
+  function isModalKind(kind) {
+    return kind === "about" || kind === "games" || kind === "music";
+  }
+
+  function bindModalHistory() {
+    window.addEventListener("popstate", (e) => {
+      if (modalOpen) {
+        closeModal({ fromPopstate: true });
+        return;
+      }
+      const kind = e.state?.modal;
+      if (isModalKind(kind)) {
+        openModal(kind, { fromHistory: true });
+      }
+    });
+  }
+
+  function openModalFromHash() {
+    const kind = (location.hash || "").replace(/^#/, "");
+    if (!isModalKind(kind)) return;
+    history.replaceState({ modal: kind }, "", `#${kind}`);
+    openModal(kind, { fromHistory: true });
+  }
+
   function onPanelWheel(e) {
     if (!stripEl || activeKind === "about") return;
     // Mobile uses native vertical scroll
@@ -217,8 +245,9 @@
       kind === "games" ? "Quit" : kind === "about" ? "CHOP" : "Bail";
   }
 
-  function openModal(kind) {
-    if (!modal || !data) return;
+  function openModal(kind, { fromHistory = false } = {}) {
+    if (!modal || !data || !isModalKind(kind)) return;
+    const wasOpen = modalOpen;
     activeKind = kind;
     const titles = { about: "About", games: "Games", music: "Music" };
     const stamps = {
@@ -249,10 +278,20 @@
     document.body.classList.add("modal-open");
     modalOpen = true;
     modalClose?.focus();
+
+    // So the browser/OS back button closes the modal instead of leaving the site.
+    if (!fromHistory) {
+      if (wasOpen || history.state?.modal) {
+        history.replaceState({ modal: kind }, "", `#${kind}`);
+      } else {
+        history.pushState({ modal: kind }, "", `#${kind}`);
+        pushedModalState = true;
+      }
+    }
   }
 
-  function closeModal() {
-    if (!modal) return;
+  function closeModal({ fromPopstate = false } = {}) {
+    if (!modal || !modalOpen) return;
     unwireStrip();
     unwireAbout();
     syncMusicTags(null);
@@ -264,6 +303,15 @@
     modalOpen = false;
     activeKind = null;
     setCloseLabel(null);
+
+    if (fromPopstate) {
+      pushedModalState = false;
+    } else if (pushedModalState) {
+      pushedModalState = false;
+      history.back();
+    } else if (location.hash) {
+      history.replaceState(null, "", location.pathname + location.search);
+    }
   }
 
   function syncMusicTags(kind) {
