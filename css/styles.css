@@ -94,8 +94,8 @@ img {
   z-index: 3;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.55) 42%, rgba(0, 0, 0, 0.78) 100%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.25) 35%, rgba(0, 0, 0, 0.3) 60%, rgba(0, 0, 0, 0.75) 100%);
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.48) 42%, rgba(0, 0, 0, 0.18) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.12) 35%, rgba(0, 0, 0, 0.14) 60%, rgba(0, 0, 0, 0.4) 100%);
 }
 
 .bg-noise {
@@ -268,10 +268,9 @@ img {
   pointer-events: none;
   background: radial-gradient(
     ellipse 48% 42% at center,
-    rgba(0, 0, 0, 0.78) 0%,
-    rgba(0, 0, 0, 0.55) 38%,
-    rgba(0, 0, 0, 0.22) 68%,
-    transparent 100%
+    rgba(0, 0, 0, 0.35) 0%,
+    rgba(0, 0, 0, 0.18) 40%,
+    transparent 72%
   );
 }
 
