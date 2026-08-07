@@ -205,6 +205,14 @@
       "image": "assets/projects/spacecowboy.png",
       "date": "2024-04-20",
       "tag": "ALBUM"
+    },
+    {
+      "id": "67mihost",
+      "title": "67 Minutes in Heaven OST",
+      "url": "https://open.spotify.com/album/5BbilWPbfoTB1jrWVaEvet?si=tLJ0PNx4TEGvbguxxdsImA",
+      "image": "assets/projects/67mihost.png",
+      "date": "2026-04-20",
+      "tag": "OST"
     }
   ]
 }
