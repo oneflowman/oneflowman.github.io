@@ -2144,8 +2144,8 @@ img {
   stroke-width: 7;
   stroke-linecap: round;
   stroke-linejoin: round;
-  stroke-dasharray: 900;
-  stroke-dashoffset: 900;
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 2400;
   animation: root-draw 1.9s var(--ease-out) forwards;
   opacity: 0.92;
 }
