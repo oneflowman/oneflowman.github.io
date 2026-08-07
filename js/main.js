@@ -284,7 +284,7 @@
           <section class="about-card about-card-one">
             <img
               class="about-avatar"
-              src="images/profile/me.png"
+              src="assets/profile/me.png"
               alt="One Flow Man"
               width="108"
               height="108"
@@ -296,7 +296,7 @@
           <section class="about-card about-card-two">
             <img
               class="about-avatar"
-              src="images/profile/ts.png"
+              src="assets/profile/ts.png"
               alt="Treestyle Studios"
               width="108"
               height="108"

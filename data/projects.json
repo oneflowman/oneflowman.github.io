@@ -1,19 +1,19 @@
 {
   "backgrounds": [
-    "Backgrounds/1.png",
-    "Backgrounds/2.png",
-    "Backgrounds/3.png",
-    "Backgrounds/4.png",
-    "Backgrounds/5.png",
-    "Backgrounds/6.png",
-    "Backgrounds/7.png",
-    "Backgrounds/8.png",
-    "Backgrounds/9.png",
-    "Backgrounds/10.png",
-    "Backgrounds/11.png",
-    "Backgrounds/12.png",
-    "Backgrounds/13.png",
-    "Backgrounds/14.png"
+    "assets/backgrounds/1.png",
+    "assets/backgrounds/2.png",
+    "assets/backgrounds/3.png",
+    "assets/backgrounds/4.png",
+    "assets/backgrounds/5.png",
+    "assets/backgrounds/6.png",
+    "assets/backgrounds/7.png",
+    "assets/backgrounds/8.png",
+    "assets/backgrounds/9.png",
+    "assets/backgrounds/10.png",
+    "assets/backgrounds/11.png",
+    "assets/backgrounds/12.png",
+    "assets/backgrounds/13.png",
+    "assets/backgrounds/14.png"
   ],
   "about": {
     "oneFlowMan": "Hello, my name is Will, but I'm also know as One Flow Man. I'm a creataholic with a passion for video game development and hip hop. I spent most of my life starting projects that I'd never finish, but I've recently leveled up my self-discipline and have begun actually accomplishing things! Yay me!",
