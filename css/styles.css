@@ -6,8 +6,8 @@
   --accent-soft: rgba(226, 59, 46, 0.35);
   --panel: rgba(10, 10, 14, 0.88);
   --line: rgba(243, 239, 230, 0.14);
-  --font-display: "Oswald", sans-serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "Source Sans 3", sans-serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -284,10 +284,10 @@ img {
 .brand-mark {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(2.4rem, 7vw, 4.75rem);
+  font-weight: 400;
+  font-size: clamp(2.85rem, 8.2vw, 5.6rem);
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   white-space: nowrap;
   text-shadow:
@@ -307,8 +307,8 @@ img {
 .brand-secondary {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 500;
-  font-size: clamp(0.9rem, 2vw, 1.05rem);
+  font-weight: 400;
+  font-size: clamp(1.05rem, 2.3vw, 1.25rem);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgba(243, 239, 230, 0.78);
@@ -334,8 +334,8 @@ img {
 .nav button {
   position: relative;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+  font-weight: 400;
+  font-size: clamp(1.2rem, 2.8vw, 1.5rem);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0.35rem 0.15rem;
@@ -521,9 +521,9 @@ img {
 .modal-title {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(3rem, 10vw, 6.5rem);
-  letter-spacing: 0.02em;
+  font-weight: 400;
+  font-size: clamp(3.4rem, 11.5vw, 7.4rem);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   line-height: 0.85;
   transform: rotate(-1.5deg);
@@ -1101,7 +1101,7 @@ img {
 
   .brand-mark {
     white-space: normal;
-    font-size: clamp(2.1rem, 11vw, 3rem);
+    font-size: clamp(2.5rem, 13vw, 3.5rem);
   }
 
   .nav {
@@ -1109,7 +1109,7 @@ img {
   }
 
   .modal-title {
-    font-size: clamp(2.6rem, 16vw, 4rem);
+    font-size: clamp(3rem, 18vw, 4.6rem);
   }
 
   .modal-hint {
