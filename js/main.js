@@ -674,10 +674,29 @@
             <path class="trace" d="M180 260 L260 260 L260 340 L340 340" />
             <path class="trace" d="M960 220 L880 220 L880 300 L800 300 L800 360" />
             <path class="trace" d="M420 560 L520 560 L520 640 L640 640" />
+            <path class="trace" style="animation-delay:-0.6s" d="M80 80 L80 160 L160 160 L160 220 L240 220" />
+            <path class="trace" style="animation-delay:-1.1s" d="M1120 60 L1120 140 L1040 140 L1040 200 L960 200" />
+            <path class="trace" style="animation-delay:-0.3s" d="M60 480 L140 480 L140 560 L220 560 L220 640" />
+            <path class="trace" style="animation-delay:-1.4s" d="M1140 520 L1060 520 L1060 600 L980 600 L980 680" />
+            <path class="trace" style="animation-delay:-0.8s" d="M400 80 L400 140 L480 140 L480 100 L560 100 L560 160" />
+            <path class="trace" style="animation-delay:-1.7s" d="M720 70 L800 70 L800 130 L880 130 L880 90" />
+            <path class="trace" style="animation-delay:-0.5s" d="M100 700 L180 700 L180 740 L280 740" />
+            <path class="trace" style="animation-delay:-1.2s" d="M1100 720 L1020 720 L1020 760 L900 760" />
+            <path class="trace" style="animation-delay:-0.9s" d="M640 700 L640 640 L720 640 L720 580" />
+            <path class="trace" style="animation-delay:-1.5s" d="M40 320 L100 320 L100 400 L40 400" />
+            <path class="trace" style="animation-delay:-0.2s" d="M1160 280 L1100 280 L1100 360 L1160 360" />
             <circle class="node" cx="260" cy="260" r="3.5" />
             <circle class="node" cx="880" cy="300" r="3.5" style="animation-delay:-0.4s" />
             <circle class="node" cx="520" cy="560" r="3.5" style="animation-delay:-0.9s" />
             <circle class="node" cx="700" cy="430" r="4" style="animation-delay:-1.2s" />
+            <circle class="node" cx="80" cy="160" r="3" style="animation-delay:-0.6s" />
+            <circle class="node" cx="1120" cy="140" r="3" style="animation-delay:-1.1s" />
+            <circle class="node" cx="140" cy="480" r="3" style="animation-delay:-0.3s" />
+            <circle class="node" cx="1060" cy="520" r="3" style="animation-delay:-1.4s" />
+            <circle class="node" cx="480" cy="140" r="3" style="animation-delay:-0.8s" />
+            <circle class="node" cx="800" cy="70" r="3" style="animation-delay:-1.7s" />
+            <circle class="node" cx="180" cy="700" r="3" style="animation-delay:-0.5s" />
+            <circle class="node" cx="640" cy="640" r="3.5" style="animation-delay:-0.9s" />
           </svg>
 
           ${buildBranches()}

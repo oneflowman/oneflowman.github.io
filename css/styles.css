@@ -1547,7 +1547,7 @@ img {
   --ink-paper: #e8e2d4;
   --ink-moss: #3d8f5a;
   --ink-glow: #5dff9a;
-  --ink-circuit: #3ecfcf;
+  --ink-circuit: #c9a227;
   background:
     radial-gradient(ellipse at 50% 0%, rgba(61, 143, 90, 0.18), transparent 45%),
     radial-gradient(ellipse at 100% 80%, rgba(62, 207, 207, 0.08), transparent 40%),
@@ -1816,7 +1816,7 @@ img {
 
 .ink-circuit .trace {
   fill: none;
-  stroke: rgba(62, 207, 207, 0.45);
+  stroke: rgba(201, 162, 39, 0.5);
   stroke-width: 1.5;
   stroke-linecap: square;
   stroke-dasharray: 8 6;
@@ -1825,7 +1825,7 @@ img {
 
 .ink-circuit .trace-root {
   fill: none;
-  stroke: rgba(61, 143, 90, 0.55);
+  stroke: rgba(201, 162, 39, 0.4);
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-dasharray: 900;
@@ -1834,8 +1834,8 @@ img {
 }
 
 .ink-circuit .node {
-  fill: var(--ink-glow);
-  opacity: 0.7;
+  fill: var(--ink-circuit);
+  opacity: 0.75;
   animation: node-blink 1.8s steps(2, end) infinite;
 }
 
