@@ -39,9 +39,10 @@
   let dragScrollLeft = 0;
   let dragMoved = false;
 
-  // about ink canopy parallax
+  // about ink canopy parallax + root tag marquee
   let aboutEl = null;
   let onAboutPointerMove = null;
+  let rootRafId = 0;
 
   async function init() {
     try {
@@ -278,20 +279,28 @@
   function wireAbout() {
     unwireAbout();
     aboutEl = document.querySelector(".about-ink");
-    if (!aboutEl || reduceMotion) return;
+    if (!aboutEl) return;
 
-    onAboutPointerMove = (e) => {
-      const rect = aboutEl.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
-      const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-      aboutEl.style.setProperty("--gaze-x", x.toFixed(3));
-      aboutEl.style.setProperty("--gaze-y", y.toFixed(3));
-    };
-
-    modalPanel?.addEventListener("pointermove", onAboutPointerMove);
+    if (!reduceMotion) {
+      onAboutPointerMove = (e) => {
+        const rect = aboutEl.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        aboutEl.style.setProperty("--gaze-x", x.toFixed(3));
+        aboutEl.style.setProperty("--gaze-y", y.toFixed(3));
+      };
+      modalPanel?.addEventListener("pointermove", onAboutPointerMove);
+      startRootMarquee();
+    } else {
+      placeRootTagsStatic();
+    }
   }
 
   function unwireAbout() {
+    if (rootRafId) {
+      cancelAnimationFrame(rootRafId);
+      rootRafId = 0;
+    }
     if (onAboutPointerMove) {
       modalPanel?.removeEventListener("pointermove", onAboutPointerMove);
       onAboutPointerMove = null;
@@ -303,34 +312,185 @@
     }
   }
 
+  function getRootRails() {
+    if (!aboutEl) return [];
+    return Array.from(aboutEl.querySelectorAll(".root-rail"));
+  }
+
+  function placeTagOnRail(tag, rail, dist, svg) {
+    const width = svg.clientWidth;
+    const height = svg.clientHeight;
+    if (!width || !height) return;
+    const len = rail.getTotalLength();
+    if (!len) return;
+    const d = ((dist % len) + len) % len;
+    const p1 = rail.getPointAtLength(d);
+    const p2 = rail.getPointAtLength(Math.min(d + 3, len));
+    const angle = (Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180) / Math.PI;
+    const x = (p1.x / 1200) * width;
+    const y = (p1.y / 360) * height;
+    tag.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;
+  }
+
+  function tagShiftOnRail(tag, rail) {
+    const len = rail.getTotalLength();
+    const frac = Number(tag.dataset.shiftFrac);
+    if (Number.isFinite(frac)) return frac * len;
+    return Number(tag.dataset.shift) || 0;
+  }
+
+  function placeRootTagsStatic() {
+    if (!aboutEl) return;
+    const svg = aboutEl.querySelector(".ink-root-svg");
+    const rails = getRootRails();
+    if (!svg || !rails.length) return;
+    aboutEl.querySelectorAll(".ink-root-tag").forEach((tag) => {
+      const rail = rails[Number(tag.dataset.root) || 0];
+      if (!rail) return;
+      placeTagOnRail(tag, rail, tagShiftOnRail(tag, rail), svg);
+    });
+  }
+
+  function startRootMarquee() {
+    if (!aboutEl || reduceMotion) return;
+    const svg = aboutEl.querySelector(".ink-root-svg");
+    const rails = getRootRails();
+    const tags = Array.from(aboutEl.querySelectorAll(".ink-root-tag"));
+    if (!svg || !rails.length || !tags.length) return;
+
+    const started = performance.now();
+    const tick = (now) => {
+      if (!aboutEl) return;
+      const elapsed = (now - started) / 1000;
+      tags.forEach((tag) => {
+        const rootIndex = Number(tag.dataset.root) || 0;
+        const rail = rails[rootIndex];
+        if (!rail) return;
+        const speed = 26 + rootIndex * 5;
+        const shift = tagShiftOnRail(tag, rail);
+        placeTagOnRail(tag, rail, elapsed * speed + shift, svg);
+      });
+      rootRafId = requestAnimationFrame(tick);
+    };
+    rootRafId = requestAnimationFrame(tick);
+  }
+
+  function buildRootMarquee(traits) {
+    // All roots sprout from trunk center, then splay off-screen
+    const paths = [
+      "M600 0 C540 35 420 70 300 140 C180 210 90 280 20 370",
+      "M600 0 C560 45 500 95 440 175 C370 260 300 320 230 400",
+      "M600 0 C600 55 595 120 600 210 C605 295 598 345 590 420",
+      "M600 0 C640 45 700 95 760 175 C830 260 900 320 970 400",
+      "M600 0 C660 35 780 70 900 140 C1020 210 1110 280 1180 370",
+    ];
+
+    const rails = paths
+      .map(
+        (d, i) =>
+          `<path class="root-rail" data-root="${i}" d="${d}" fill="none" />`
+      )
+      .join("");
+
+    const strokes = paths
+      .map(
+        (d, i) => `
+          <path class="root-bark" d="${d}" style="animation-delay:${(i * 0.12).toFixed(2)}s" />
+          <path class="root-sap" d="${d}" style="animation-delay:${(0.2 + i * 0.12).toFixed(2)}s" />
+        `
+      )
+      .join("");
+
+    // One trait per slot, spread across roots with wide gaps so tags don't pile up
+    const tags = traits.map((trait, i) => ({
+      trait,
+      root: i % paths.length,
+      lane: 0,
+      index: i,
+    }));
+
+    const perRoot = {};
+    tags.forEach((t) => {
+      perRoot[t.root] = (perRoot[t.root] || 0) + 1;
+    });
+    const counters = {};
+    const tagHtml = tags
+      .map((t) => {
+        counters[t.root] = counters[t.root] || 0;
+        const slot = counters[t.root];
+        counters[t.root] += 1;
+        const count = perRoot[t.root];
+        // Keep tags in the outer stretch of each root; big gaps between slots
+        const shiftFrac = count === 1 ? 0.22 : 0.12 + (slot / count) * 0.78;
+        const tone = t.index % 3 === 0 ? "is-glow" : t.index % 3 === 1 ? "is-circuit" : "";
+        return `<span class="ink-root-tag ${tone}" data-root="${t.root}" data-lane="${t.lane}" data-shift-frac="${shiftFrac.toFixed(3)}">${escapeHtml(
+          t.trait
+        )}</span>`;
+      })
+      .join("");
+
+    return `
+      <div class="ink-roots" aria-hidden="true">
+        <svg class="ink-root-svg" viewBox="0 0 1200 360" preserveAspectRatio="none" focusable="false">
+          <g class="root-rails" opacity="0">${rails}</g>
+          <g class="root-strokes">${strokes}</g>
+        </svg>
+        <div class="ink-root-tags">${tagHtml}</div>
+      </div>
+    `;
+  }
+
   function inkLeafMarkup(index, side) {
-    const n = vibe(index, side + 1);
-    const n2 = vibe(index, side + 7);
-    const n3 = vibe(index, side + 13);
-    const n4 = vibe(index, side + 19);
-    // denser stacking: multiple layers along the border axis
-    const layer = index % 3;
-    const along = Math.floor(index / 3);
-    const size = 22 + Math.round(n * 38) + layer * 4;
+    // Mirror pairs share seeds so L/R canopies stay symmetrical
+    const seedSide = side === 1 ? 0 : side === 5 ? 4 : side;
+    const n = vibe(index, seedSide + 1);
+    const n2 = vibe(index, seedSide + 7);
+    const n3 = vibe(index, seedSide + 13);
+    const n4 = vibe(index, seedSide + 19);
+    const layer = index % 5;
+    const along = Math.floor(index / 5);
+    const size = 18 + Math.round(n * 34) + layer * 3;
     let x;
     let y;
     let rot;
-    if (side === 0) {
-      x = `${(-18 + layer * 28 + n2 * 18).toFixed(1)}%`;
-      y = `${((along * 7.2 + n3 * 4) % 108) - 4}%`;
-      rot = `${(-55 + n4 * 90).toFixed(1)}deg`;
-    } else if (side === 1) {
-      x = `${(42 + layer * 22 + n2 * 20).toFixed(1)}%`;
-      y = `${((along * 7.2 + n3 * 4) % 108) - 4}%`;
-      rot = `${(95 + n4 * 90).toFixed(1)}deg`;
+
+    if (side === 0 || side === 1) {
+      // side edges — mild inward pull at the very top only; right mirrors left
+      const yPct = (along * 4.4 + n3 * 2.5) % 108;
+      const topBias = Math.max(0, 1 - yPct / 28);
+      y = `${(yPct - 4).toFixed(1)}%`;
+      const xFromLeft = -20 + layer * 20 + n2 * 12 + topBias * (10 + layer * 4);
+      if (side === 0) {
+        x = `${xFromLeft.toFixed(1)}%`;
+        rot = `${(-55 + n4 * 90).toFixed(1)}deg`;
+      } else {
+        x = `${(100 - xFromLeft - 18).toFixed(1)}%`;
+        rot = `${(55 - n4 * 90).toFixed(1)}deg`;
+      }
     } else if (side === 2) {
-      x = `${((along * 6.5 + n2 * 4) % 108) - 4}%`;
-      y = `${(-24 + layer * 26 + n3 * 16).toFixed(1)}%`;
-      rot = `${(-30 + n4 * 50).toFixed(1)}deg`;
+      // top edge — shallow hanging band that only kisses the trunk rim
+      x = `${((along * 2.8 + n2 * 1.6) % 104) - 2}%`;
+      y = `${(-42 + layer * 10 + n3 * 6).toFixed(1)}%`;
+      rot = `${(-35 + n4 * 55).toFixed(1)}deg`;
+    } else if (side === 4 || side === 5) {
+      // mirrored top corner arcs — left (4) and right (5), stay above content
+      const t = Math.min(1, ((along % 17) + n2 * 0.4) / 16);
+      const theta = t * (Math.PI / 2) * 0.98;
+      const radius = 22 + layer * 11 + n3 * 16;
+      const xArc = Math.sin(theta) * radius + n * 5;
+      const yArc = Math.cos(theta) * radius * 0.55 + n2 * 3;
+      if (side === 4) {
+        x = `${Math.max(0, xArc).toFixed(1)}%`;
+        rot = `${(-90 + t * 70 + n4 * 35).toFixed(1)}deg`;
+      } else {
+        x = `${Math.min(100, 100 - xArc).toFixed(1)}%`;
+        rot = `${(90 - t * 70 - n4 * 35).toFixed(1)}deg`;
+      }
+      y = `${Math.max(0, yArc).toFixed(1)}%`;
     } else {
-      x = `${((along * 6.5 + n2 * 4) % 108) - 4}%`;
-      y = `${(28 + layer * 24 + n3 * 18).toFixed(1)}%`;
-      rot = `${(150 + n4 * 50).toFixed(1)}deg`;
+      x = "50%";
+      y = "50%";
+      rot = "0deg";
     }
 
     const tone = n > 0.7 ? "is-tech" : n > 0.38 ? "is-bright" : "is-deep";
@@ -365,6 +525,35 @@
   function buildInkCanopy(side, count) {
     let html = "";
     for (let i = 0; i < count; i += 1) html += inkLeafMarkup(i, side);
+    return html;
+  }
+
+  function buildFallingLeaves(count) {
+    let html = "";
+    for (let i = 0; i < count; i += 1) {
+      const n = vibe(i, 31);
+      const n2 = vibe(i, 37);
+      const n3 = vibe(i, 41);
+      const size = 8 + Math.round(n * 12);
+      const left = (n2 * 100).toFixed(1);
+      const dur = (7 + n3 * 9).toFixed(2);
+      const delay = (-n * 12).toFixed(2);
+      const drift = (-40 + n2 * 80).toFixed(0);
+      const spin = (120 + n3 * 240).toFixed(0);
+      const tone = n > 0.66 ? "is-tech" : n > 0.33 ? "is-bright" : "is-deep";
+      html += `
+        <span
+          class="ink-fall-leaf ${tone}"
+          style="--left:${left}%;--s:${size}px;--dur:${dur}s;--delay:${delay}s;--drift:${drift}px;--spin:${spin}deg;--op:${(0.45 + n * 0.4).toFixed(2)}"
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 40 64" focusable="false">
+            <path class="blade" d="M20 2 C30 14 38 26 35 42 C32 54 24 61 20 62 C16 61 8 54 5 42 C2 26 10 14 20 2Z" />
+            <path class="vein" d="M20 12 L20 50" />
+          </svg>
+        </span>
+      `;
+    }
     return html;
   }
 
@@ -428,14 +617,6 @@
         "Self-Disciplined Doer",
         "Lover & Hater",
       ];
-      const traitHtml = traits
-        .map((trait, i) => {
-          const tilt = ((vibe(i, 9) - 0.5) * 8).toFixed(1);
-          return `<span class="ink-trait" style="--i:${i};--tilt:${tilt}deg">${escapeHtml(
-            trait
-          )}</span>`;
-        })
-        .join("");
 
       return `
         <div class="about-ink" style="--gaze-x:0; --gaze-y:0">
@@ -454,44 +635,48 @@
             <circle class="node" cx="700" cy="430" r="4" style="animation-delay:-1.2s" />
           </svg>
 
-          <div class="ink-canopy ink-canopy-l" aria-hidden="true">${buildInkCanopy(0, 42)}</div>
-          <div class="ink-canopy ink-canopy-r" aria-hidden="true">${buildInkCanopy(1, 42)}</div>
-          <div class="ink-canopy ink-canopy-t" aria-hidden="true">${buildInkCanopy(2, 36)}</div>
-          <div class="ink-canopy ink-canopy-b" aria-hidden="true">${buildInkCanopy(3, 36)}</div>
+          <div class="ink-fall" aria-hidden="true">${buildFallingLeaves(28)}</div>
 
-          <div class="ink-page">
-            <figure class="ink-panel ink-panel-hero">
-              <img src="assets/profile/me.png" alt="One Flow Man" width="480" height="640" />
-              <span class="ink-halftone" aria-hidden="true"></span>
-              <p class="ink-nameplate">One <span>Flow</span> Man</p>
-            </figure>
+          <div class="ink-canopy ink-canopy-l" aria-hidden="true">${buildInkCanopy(0, 64)}</div>
+          <div class="ink-canopy ink-canopy-r" aria-hidden="true">${buildInkCanopy(1, 64)}</div>
+          <div class="ink-canopy ink-canopy-t" aria-hidden="true">${buildInkCanopy(2, 120)}</div>
+          <div class="ink-canopy ink-canopy-tl" aria-hidden="true">${buildInkCanopy(4, 95)}</div>
+          <div class="ink-canopy ink-canopy-tr" aria-hidden="true">${buildInkCanopy(5, 95)}</div>
 
-            <section class="ink-panel ink-panel-bio">
-              <p class="ink-label">Chapter 01</p>
-              <h3>One <span>Flow</span> Man</h3>
-              <p class="ink-copy">${escapeHtml(about.oneFlowMan || "")}</p>
-            </section>
+          <div class="ink-tree">
+            <div class="ink-trunk">
+              <div class="ink-trunk-grain" aria-hidden="true"></div>
+              <div class="ink-page">
+                <figure class="ink-panel ink-panel-hero">
+                  <img src="assets/profile/me.png" alt="One Flow Man" width="480" height="640" />
+                  <span class="ink-halftone" aria-hidden="true"></span>
+                  <p class="ink-nameplate">One <span>Flow</span> Man</p>
+                </figure>
 
-            <section class="ink-panel ink-panel-studio">
-              <div class="ink-studio-row">
-                <img
-                  class="ink-studio-mark"
-                  src="assets/profile/ts.png"
-                  alt="Treestyle Studios"
-                  width="96"
-                  height="96"
-                />
-                <div>
-                  <p class="ink-label">Chapter 02</p>
-                  <h3>Treestyle Studios</h3>
-                  <p class="ink-copy">${escapeHtml(about.treestyleStudios || "")}</p>
-                </div>
+                <section class="ink-panel ink-panel-bio">
+                  <h3>One <span>Flow</span> Man</h3>
+                  <p class="ink-copy">${escapeHtml(about.oneFlowMan || "")}</p>
+                </section>
+
+                <section class="ink-panel ink-panel-studio">
+                  <div class="ink-studio-row">
+                    <img
+                      class="ink-studio-mark"
+                      src="assets/profile/ts.png"
+                      alt="Treestyle Studios"
+                      width="96"
+                      height="96"
+                    />
+                    <div>
+                      <h3>Treestyle Studios</h3>
+                      <p class="ink-copy">${escapeHtml(about.treestyleStudios || "")}</p>
+                    </div>
+                  </div>
+                </section>
               </div>
-            </section>
-
-            <div class="ink-panel ink-panel-traits" aria-hidden="true">
-              ${traitHtml}
             </div>
+
+            ${buildRootMarquee(traits)}
           </div>
         </div>
       `;
