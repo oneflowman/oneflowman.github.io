@@ -263,14 +263,15 @@ img {
 .hero-panel::before {
   content: "";
   position: absolute;
-  inset: -8% -4%;
+  inset: -35% -28%;
   z-index: -1;
   pointer-events: none;
   background: radial-gradient(
-    ellipse at center,
-    rgba(0, 0, 0, 0.72) 0%,
-    rgba(0, 0, 0, 0.45) 55%,
-    transparent 78%
+    ellipse 48% 42% at center,
+    rgba(0, 0, 0, 0.78) 0%,
+    rgba(0, 0, 0, 0.55) 38%,
+    rgba(0, 0, 0, 0.22) 68%,
+    transparent 100%
   );
 }
 
