@@ -701,8 +701,10 @@
     const n2 = vibe(index, seedSide + 7);
     const n3 = vibe(index, seedSide + 13);
     const n4 = vibe(index, seedSide + 19);
-    const layer = index % 5;
-    const along = Math.floor(index / 5);
+    // Corner canopies use 3 layers (was 5) so stacks don't bury invisible leaves
+    const depth = side === 4 || side === 5 ? 3 : 5;
+    const layer = index % depth;
+    const along = Math.floor(index / depth);
     const size = 18 + Math.round(n * 34) + layer * 3;
     let x;
     let y;
@@ -722,15 +724,18 @@
         rot = `${(55 - n4 * 90).toFixed(1)}deg`;
       }
     } else if (side === 2) {
-      // top edge — shallow hanging band that only kisses the trunk rim
-      x = `${((along * 2.8 + n2 * 1.6) % 104) - 2}%`;
+      // top edge — full-width hanging band (was ~0–66% only; right side used to
+      // lean on the dense corner stack, which left a gap once corners were thinned)
+      const topAlong = 24; // 120 leaves / 5 layers
+      const xSpan = (along % topAlong) / Math.max(1, topAlong - 1);
+      x = `${(xSpan * 104 - 2 + (n2 - 0.5) * 3).toFixed(1)}%`;
       y = `${(-42 + layer * 10 + n3 * 6).toFixed(1)}%`;
       rot = `${(-35 + n4 * 55).toFixed(1)}deg`;
     } else if (side === 4 || side === 5) {
       // mirrored top corner arcs — left (4) and right (5), stay above content
-      const t = Math.min(1, ((along % 17) + n2 * 0.4) / 16);
+      const t = Math.min(1, ((along % 14) + n2 * 0.4) / 13);
       const theta = t * (Math.PI / 2) * 0.98;
-      const radius = 22 + layer * 11 + n3 * 16;
+      const radius = 22 + layer * 14 + n3 * 16;
       const xArc = Math.sin(theta) * radius + n * 5;
       const yArc = Math.cos(theta) * radius * 0.55 + n2 * 3;
       if (side === 4) {
@@ -1002,8 +1007,8 @@
           <div class="ink-canopy ink-canopy-l" aria-hidden="true">${buildInkCanopy(0, 64)}</div>
           <div class="ink-canopy ink-canopy-r" aria-hidden="true">${buildInkCanopy(1, 64)}</div>
           <div class="ink-canopy ink-canopy-t" aria-hidden="true">${buildInkCanopy(2, 120)}</div>
-          <div class="ink-canopy ink-canopy-tl" aria-hidden="true">${buildInkCanopy(4, 95)}</div>
-          <div class="ink-canopy ink-canopy-tr" aria-hidden="true">${buildInkCanopy(5, 95)}</div>`
+          <div class="ink-canopy ink-canopy-tl" aria-hidden="true">${buildInkCanopy(4, 48)}</div>
+          <div class="ink-canopy ink-canopy-tr" aria-hidden="true">${buildInkCanopy(5, 48)}</div>`
           }
 
           <div class="ink-tree">
