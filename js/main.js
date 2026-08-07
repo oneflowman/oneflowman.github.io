@@ -6,6 +6,7 @@
   const bgStage = document.getElementById("bg-stage");
   const noiseEl = document.getElementById("bg-noise");
   const rgbEl = document.getElementById("rgb-split");
+  const brandEl = document.getElementById("brand");
   const socialsEl = document.getElementById("socials");
   const modal = document.getElementById("modal");
   const modalPanel = document.getElementById("modal-panel");
@@ -128,6 +129,7 @@
     current.classList.add("is-leaving", "is-glitching");
     if (noiseEl) noiseEl.classList.add("is-flashing");
     if (rgbEl) rgbEl.classList.add("is-active");
+    pulseBrand();
 
     window.setTimeout(() => {
       current.classList.remove("is-active", "is-leaving", "is-glitching");
@@ -136,6 +138,15 @@
       currentIndex = nextIndex;
       transitioning = false;
     }, GLITCH_MS);
+  }
+
+  function pulseBrand() {
+    if (!brandEl || reduceMotion || modalOpen) return;
+    brandEl.classList.remove("is-glitching");
+    // force reflow so repeated glitches retrigger
+    void brandEl.offsetWidth;
+    brandEl.classList.add("is-glitching");
+    window.setTimeout(() => brandEl.classList.remove("is-glitching"), GLITCH_MS);
   }
 
   function bindNav() {

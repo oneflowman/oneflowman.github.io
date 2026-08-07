@@ -97,8 +97,8 @@ img {
   z-index: 3;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.48) 42%, rgba(0, 0, 0, 0.18) 100%),
-    linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.12) 35%, rgba(0, 0, 0, 0.14) 60%, rgba(0, 0, 0, 0.4) 100%);
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0.58) 0%, rgba(0, 0, 0, 0.38) 46%, rgba(0, 0, 0, 0.12) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.32) 0%, rgba(0, 0, 0, 0.08) 38%, rgba(0, 0, 0, 0.1) 62%, rgba(0, 0, 0, 0.42) 100%);
 }
 
 .bg-noise {
@@ -240,7 +240,7 @@ img {
 
 .socials a:hover,
 .socials a:focus-visible {
-  color: var(--text);
+  color: var(--accent);
 }
 
 .hero {
@@ -271,8 +271,8 @@ img {
   pointer-events: none;
   background: radial-gradient(
     ellipse 48% 42% at center,
-    rgba(0, 0, 0, 0.35) 0%,
-    rgba(0, 0, 0, 0.18) 40%,
+    rgba(0, 0, 0, 0.28) 0%,
+    rgba(0, 0, 0, 0.12) 40%,
     transparent 72%
   );
 }
@@ -305,6 +305,11 @@ img {
     0 1px 0 rgba(0, 0, 0, 0.65),
     0 2px 18px rgba(0, 0, 0, 0.85),
     0 0 24px rgba(226, 59, 46, 0.35);
+  animation: flow-glow 5s ease-in-out 1.2s infinite;
+}
+
+.brand.is-glitching .brand-mark .flow {
+  animation: flow-hit 720ms steps(2, end);
 }
 
 .brand-secondary {
@@ -346,7 +351,7 @@ img {
   color: rgba(243, 239, 230, 0.92);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, text-shadow 0.25s ease, letter-spacing 0.25s var(--ease-out);
 }
 
 .nav button::after,
@@ -368,6 +373,11 @@ img {
 .nav a:hover,
 .nav a:focus-visible {
   color: var(--text);
+  letter-spacing: 0.14em;
+  text-shadow:
+    2px 0 0 rgba(226, 59, 46, 0.35),
+    -2px 0 0 rgba(70, 180, 255, 0.28),
+    0 1px 10px rgba(0, 0, 0, 0.9);
 }
 
 .nav button:hover::after,
@@ -395,6 +405,51 @@ img {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes flow-glow {
+  0%,
+  100% {
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.65),
+      0 2px 18px rgba(0, 0, 0, 0.85),
+      0 0 24px rgba(226, 59, 46, 0.28);
+  }
+  50% {
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.65),
+      0 2px 18px rgba(0, 0, 0, 0.85),
+      0 0 34px rgba(226, 59, 46, 0.55);
+  }
+}
+
+@keyframes flow-hit {
+  0%,
+  100% {
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.65),
+      0 2px 18px rgba(0, 0, 0, 0.85),
+      0 0 24px rgba(226, 59, 46, 0.35);
+  }
+  20% {
+    text-shadow:
+      -3px 0 0 rgba(226, 59, 46, 0.55),
+      3px 0 0 rgba(70, 180, 255, 0.4),
+      0 2px 18px rgba(0, 0, 0, 0.85);
+  }
+  45% {
+    text-shadow:
+      4px 0 0 rgba(226, 59, 46, 0.4),
+      -2px 0 0 rgba(70, 180, 255, 0.35),
+      0 0 28px rgba(226, 59, 46, 0.5),
+      0 2px 18px rgba(0, 0, 0, 0.85);
+  }
+  70% {
+    text-shadow:
+      -1px 0 0 rgba(226, 59, 46, 0.35),
+      2px 0 0 rgba(70, 180, 255, 0.25),
+      0 2px 18px rgba(0, 0, 0, 0.85);
   }
 }
 
@@ -1817,7 +1872,8 @@ img {
 
   .modal-grain,
   .about-marquee span,
-  .modal-hint {
+  .modal-hint,
+  .brand-mark .flow {
     animation: none !important;
   }
 
