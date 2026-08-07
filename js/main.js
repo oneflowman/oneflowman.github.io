@@ -207,7 +207,7 @@
     const label = modalClose?.querySelector("span") || modalClose;
     if (!label) return;
     label.textContent =
-      kind === "games" ? "Quit" : kind === "about" ? "Flip" : "Bail";
+      kind === "games" ? "Quit" : kind === "about" ? "CHOP" : "Bail";
   }
 
   function openModal(kind) {
@@ -215,7 +215,7 @@
     activeKind = kind;
     const titles = { about: "About", games: "Games", music: "Music" };
     const stamps = {
-      about: "// INK & ROOT",
+      about: "// GROWING",
       games: "// BOOT SEQUENCE",
       music: "// FROM THE CRATES",
     };
@@ -223,7 +223,10 @@
     modalTitle.textContent = titles[kind] || "Portfolio";
     const ghosts = { about: "INK", games: "READY", music: "CIPHER" };
     if (modalGhost) modalGhost.textContent = ghosts[kind] || "PORTFOLIO";
-    if (modalStamp) modalStamp.textContent = stamps[kind] || "// SIGNAL";
+    if (modalStamp) {
+      modalStamp.textContent = stamps[kind] || "// SIGNAL";
+      modalStamp.classList.toggle("is-growing", kind === "about");
+    }
     modalPanel?.setAttribute("data-kind", kind);
     setCloseLabel(kind);
     syncMusicTags(kind);
@@ -647,32 +650,34 @@
             <div class="ink-trunk">
               <div class="ink-trunk-grain" aria-hidden="true"></div>
               <div class="ink-page">
-                <figure class="ink-panel ink-panel-hero">
+                <figure class="ink-hollow">
+                  <span class="ink-hollow-rim" aria-hidden="true"></span>
                   <img src="assets/profile/me.png" alt="One Flow Man" width="480" height="640" />
-                  <span class="ink-halftone" aria-hidden="true"></span>
-                  <p class="ink-nameplate">One <span>Flow</span> Man</p>
+                  <span class="ink-hollow-shade" aria-hidden="true"></span>
                 </figure>
 
-                <section class="ink-panel ink-panel-bio">
-                  <h3>One <span>Flow</span> Man</h3>
-                  <p class="ink-copy">${escapeHtml(about.oneFlowMan || "")}</p>
-                </section>
+                <div class="ink-carving">
+                  <section class="ink-carve ink-carve-bio">
+                    <h3>One <span>Flow</span> Man</h3>
+                    <p class="ink-copy">${escapeHtml(about.oneFlowMan || "")}</p>
+                  </section>
 
-                <section class="ink-panel ink-panel-studio">
-                  <div class="ink-studio-row">
+                  <div class="ink-sap-seam" aria-hidden="true"></div>
+
+                  <section class="ink-carve ink-carve-studio">
                     <img
-                      class="ink-studio-mark"
+                      class="ink-brand-seal"
                       src="assets/profile/ts.png"
                       alt="Treestyle Studios"
-                      width="96"
-                      height="96"
+                      width="112"
+                      height="112"
                     />
-                    <div>
-                      <h3>Treestyle Studios</h3>
+                    <div class="ink-carve-body">
+                      <h3><span class="ink-tree-word">Tree</span>style Studios</h3>
                       <p class="ink-copy">${escapeHtml(about.treestyleStudios || "")}</p>
                     </div>
-                  </div>
-                </section>
+                  </section>
+                </div>
               </div>
             </div>
 
