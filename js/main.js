@@ -329,7 +329,10 @@
     const d = ((dist % len) + len) % len;
     const p1 = rail.getPointAtLength(d);
     const p2 = rail.getPointAtLength(Math.min(d + 3, len));
-    const angle = (Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180) / Math.PI;
+    let angle = (Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180) / Math.PI;
+    // Leftmost two roots travel leftward — flip tags so they stay upright
+    const rootIndex = Number(tag.dataset.root) || 0;
+    if (rootIndex <= 1) angle += 180;
     const x = (p1.x / 1200) * width;
     const y = (p1.y / 360) * height;
     tag.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%) rotate(${angle}deg)`;

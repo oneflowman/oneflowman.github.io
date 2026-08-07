@@ -2060,14 +2060,13 @@ img {
 }
 
 .ink-carve h3 span {
-  color: var(--accent);
+  color: var(--ink-moss);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
 }
 
 .ink-carve h3 .ink-tree-word {
-  color: var(--ink-glow);
-  text-shadow:
-    0 2px 0 rgba(0, 0, 0, 0.55),
-    0 0 14px rgba(93, 255, 154, 0.35);
+  color: var(--ink-moss);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
 }
 
 .ink-copy {
