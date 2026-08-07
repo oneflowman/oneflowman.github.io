@@ -28,17 +28,27 @@
     {
       "id": "spotify",
       "label": "Spotify",
-      "url": "https://open.spotify.com/"
-    },
-    {
-      "id": "x",
-      "label": "X",
-      "url": "https://x.com/"
+      "url": "https://open.spotify.com/playlist/6A5Ip9GBs6CLNVyw1NfJPT?si=92fa7283031f4069"
     },
     {
       "id": "youtube",
       "label": "YouTube",
-      "url": "https://youtube.com/"
+      "url": "https://www.youtube.com/@oneflowman"
+    },
+    {
+      "id": "instagram",
+      "label": "Instagram",
+      "url": "https://www.instagram.com/treestylestudios/"
+    },
+    {
+      "id": "tiktok",
+      "label": "TikTok",
+      "url": "https://www.tiktok.com/@treestylestudios"
+    },
+    {
+      "id": "steam",
+      "label": "Steam",
+      "url": "https://store.steampowered.com/search/?developer=One%20Flow%20Man"
     }
   ],
   "games": [
