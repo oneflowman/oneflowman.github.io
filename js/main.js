@@ -187,6 +187,12 @@
     updateScrub();
   }
 
+  function setCloseLabel(kind) {
+    const label = modalClose?.querySelector("span") || modalClose;
+    if (!label) return;
+    label.textContent = kind === "games" ? "Quit" : "Bail";
+  }
+
   function openModal(kind) {
     if (!modal || !data) return;
     activeKind = kind;
@@ -201,6 +207,7 @@
     if (modalGhost) modalGhost.textContent = titles[kind] || "PORTFOLIO";
     if (modalStamp) modalStamp.textContent = stamps[kind] || "// SIGNAL";
     modalPanel?.setAttribute("data-kind", kind);
+    setCloseLabel(kind);
 
     setModalMeta(kind);
     modalBody.innerHTML = renderModalBody(kind);
@@ -221,6 +228,7 @@
     document.body.classList.remove("modal-open");
     modalOpen = false;
     activeKind = null;
+    setCloseLabel(null);
   }
 
   function setModalMeta(kind) {
@@ -246,7 +254,10 @@
       .map((item) => yearFromDate(item.date))
       .filter(Boolean)
       .map(Number);
-    const countLabel = `${items.length} ${kind === "music" ? "tracks" : "RELEASES"}`;
+    const countLabel =
+      kind === "music"
+        ? `${items.length} tracks`
+        : `${items.length} GAMES`;
     let range = "";
     if (years.length) {
       const min = Math.min(...years);
@@ -256,7 +267,10 @@
 
     modalMeta.hidden = false;
     modalMeta.textContent = range ? `${countLabel} · ${range}` : countLabel;
-    if (modalHint) modalHint.hidden = false;
+    if (modalHint) {
+      modalHint.hidden = false;
+      modalHint.textContent = kind === "games" ? "← SELECT →" : "drag / scroll →";
+    }
     if (modalScrub) modalScrub.hidden = false;
   }
 
@@ -305,11 +319,12 @@
     }
 
     const kindClass = kind === "music" ? "is-music" : "is-games";
+    const endLabel = kind === "games" ? "NO DATA" : "end of tape";
     return `
       <div class="chaos-strip ${kindClass}" id="chaos-strip" tabindex="0">
-        ${items.map((item, index) => projectTile(item, index)).join("")}
+        ${items.map((item, index) => projectTile(item, index, kind)).join("")}
         <div class="chaos-end" aria-hidden="true">
-          <span>end of tape</span>
+          <span>${endLabel}</span>
         </div>
       </div>
     `;
@@ -337,14 +352,26 @@
     return x - Math.floor(x);
   }
 
-  function projectTile(item, index) {
+  function projectTile(item, index, kind) {
     const featured = index === 0;
     const year = yearFromDate(item.date);
-    const rot = ((vibe(index, 1) - 0.5) * (featured ? 4 : 14)).toFixed(2);
-    const lift = ((vibe(index, 2) - 0.5) * 48).toFixed(1);
-    const size = featured ? "xl" : vibe(index, 3) > 0.66 ? "lg" : vibe(index, 3) > 0.33 ? "md" : "sm";
+    const isGames = kind === "games";
+    const rot = isGames
+      ? "0.00"
+      : ((vibe(index, 1) - 0.5) * (featured ? 4 : 14)).toFixed(2);
+    const lift = isGames
+      ? "0.0"
+      : ((vibe(index, 2) - 0.5) * 48).toFixed(1);
+    let size;
+    if (featured) {
+      size = "xl";
+    } else if (isGames) {
+      size = vibe(index, 3) > 0.5 ? "lg" : "md";
+    } else {
+      size = vibe(index, 3) > 0.66 ? "lg" : vibe(index, 3) > 0.33 ? "md" : "sm";
+    }
     const delay = Math.min(index, 12) * 60;
-    const tape = vibe(index, 4) > 0.55 ? " has-tape" : "";
+    const tape = !isGames && vibe(index, 4) > 0.55 ? " has-tape" : "";
     const stamp = String(item.tag || "").trim();
     const stampHtml = stamp
       ? `<span class="chaos-stamp" aria-hidden="true">${escapeHtml(stamp.toUpperCase())}</span>`
